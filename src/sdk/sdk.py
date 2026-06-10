@@ -30,12 +30,15 @@ class RoboVacuumSDK:
         # through the single SDK entry point (scripts never import src.env).
         return load_house_map(self._map_path(map_name)).walls
 
-    def train(self, seed: int, map_name: str | None = None) -> list[dict]:
+    def train(self, seed: int, map_name: str | None = None, checkpoint_path: str | None = None) -> list[dict]:
         name = map_name or self.cfg["maps"]["train"][0]
         env = self.build_env(name, seed=seed)
         agent = DDPGAgent(env.state_dim, env.action_dim, self.cfg, seed=seed)
         trainer = Trainer(env, agent, self.cfg)
-        return trainer.train(self.cfg["training"]["episodes"])
+        history = trainer.train(self.cfg["training"]["episodes"])
+        if checkpoint_path is not None:
+            agent.save(checkpoint_path)  # F6/F30: persist trained weights for eval/trajectory
+        return history
 
     def rollout(
         self, agent: DDPGAgent, env: VacuumEnv, max_steps: int | None = None
