@@ -48,3 +48,14 @@ def test_evaluate_loads_checkpoint_and_reports(tmp_path):
     report = sdk.evaluate(str(ckpt), map_name="room_single", seed=1)
     assert set(report) == {"coverage", "steps", "collisions"}
     assert 0.0 <= report["coverage"] <= 1.0
+
+
+def test_trajectory_loads_checkpoint_and_returns_path(tmp_path):
+    sdk = RoboVacuumSDK()
+    env = sdk.build_env(map_name="room_single", seed=2)
+    agent = DDPGAgent(env.state_dim, env.action_dim, sdk.cfg, seed=2)
+    ckpt = tmp_path / "agent.pt"
+    agent.save(str(ckpt))
+    path = sdk.trajectory("room_single", checkpoint_path=str(ckpt), seed=2)
+    assert isinstance(path, list) and len(path) >= 1
+    assert all(len(p) == 2 for p in path)

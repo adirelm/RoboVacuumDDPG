@@ -79,3 +79,14 @@ class RoboVacuumSDK:
         agent = DDPGAgent(env.state_dim, env.action_dim, self.cfg, seed=seed)
         agent.load(checkpoint_path)
         return self.coverage_report(agent, env)
+
+    def trajectory(
+        self, map_name: str, checkpoint_path: str | None = None, seed: int | None = None
+    ) -> list[tuple[float, float]]:
+        # Greedy (x, y) path for the trajectory figure; loads trained weights when
+        # given (F6/F30) so the figure is the trained policy, not a fresh agent.
+        env = self.build_env(map_name, seed=seed)
+        agent = DDPGAgent(env.state_dim, env.action_dim, self.cfg, seed=seed)
+        if checkpoint_path is not None:
+            agent.load(checkpoint_path)
+        return self.rollout(agent, env)
