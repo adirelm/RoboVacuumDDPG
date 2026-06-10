@@ -1,0 +1,26 @@
+"""Doc contract (spec §7/§10, TODO T04-05): README is the submission-report
+shell — embeds the three figures, the uv install/run + SDK usage, links the
+analysis docs, and keeps the honest PENDING convergence framing.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+_DOC = Path(__file__).resolve().parent.parent.parent / "README.md"
+
+
+def test_readme_embeds_three_figures() -> None:
+    text = _DOC.read_text(encoding="utf-8")
+    assert "results/figures/learning_curve.png" in text
+    assert "results/figures/critic_loss.png" in text
+    assert "results/figures/trajectory.png" in text
+
+
+def test_readme_has_install_run_sdk_and_links() -> None:
+    text = _DOC.read_text(encoding="utf-8")
+    assert "uv sync --dev" in text
+    assert "RoboVacuumSDK" in text
+    assert "docs/ANALYSIS.md" in text
+    assert "docs/THEORY.md" in text
+    assert "PENDING" in text
