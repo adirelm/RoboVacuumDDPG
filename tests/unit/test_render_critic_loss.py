@@ -11,12 +11,36 @@ def _write_synthetic(history_dir, seeds):
                 "episode": e,
                 "reward": 1.0,
                 "critic_loss": float(seed) / (e + 1),
+                # F29: step-level critic loss per gradient update (3 updates/episode)
+                "critic_losses": [float(seed) / (e + 1)] * 3,
                 "coverage": 0.5,
                 "steps": 10,
             }
             for e in range(4)
         ]
         (history_dir / f"seed_{seed}.json").write_text(json.dumps(records), encoding="utf-8")
+
+
+def test_step_series_flattens_per_seed_critic_losses(tmp_path):
+    _write_synthetic(tmp_path / "history", [42, 7])
+    steps, mean, ci = rcl.step_series(str(tmp_path / "history"))
+    # 4 episodes * 3 updates each => 12 gradient-update steps on the x-axis.
+    assert list(steps) == list(range(12))
+    assert len(mean) == 12 and len(ci) == 12
+
+
+def test_step_series_falls_back_to_per_episode_mean_when_absent(tmp_path):
+    history_dir = tmp_path / "history"
+    history_dir.mkdir(parents=True, exist_ok=True)
+    for seed in (42, 7):
+        records = [
+            {"episode": e, "reward": 1.0, "critic_loss": 0.1, "coverage": 0.5, "steps": 10} for e in range(4)
+        ]
+        (history_dir / f"seed_{seed}.json").write_text(json.dumps(records), encoding="utf-8")
+    steps, mean, _ci = rcl.step_series(str(history_dir))
+    # No critic_losses lists -> fall back to one point per episode (4).
+    assert list(steps) == [0, 1, 2, 3]
+    assert len(mean) == 4
 
 
 def test_render_writes_png_over_5kb(tmp_path):
