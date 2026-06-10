@@ -1,0 +1,43 @@
+"""Unit tests for the cached YAML config loader (contract: src/utils/config_loader.py)."""
+
+from __future__ import annotations
+
+import pytest
+
+from src.utils.config_loader import get, load_config
+
+
+def test_load_config_returns_dict_with_version() -> None:
+    cfg = load_config()
+    assert isinstance(cfg, dict)
+    assert cfg["version"] == "1.0.0"
+
+
+def test_load_config_is_cached_same_object() -> None:
+    assert load_config() is load_config()
+
+
+def test_get_ddpg_block_has_tau() -> None:
+    ddpg = get("ddpg")
+    assert isinstance(ddpg, dict)
+    assert ddpg["tau"] == 0.005  # noqa: PLR2004
+    assert ddpg["gamma"] == 0.99  # noqa: PLR2004
+
+
+def test_get_env_block_has_n_rays() -> None:
+    env = get("env")
+    assert env["n_rays"] == 16  # noqa: PLR2004
+    assert env["ray_max"] == 5.0  # noqa: PLR2004
+
+
+def test_get_missing_section_raises_keyerror() -> None:
+    with pytest.raises(KeyError):
+        get("missing")
+
+
+def test_load_config_explicit_path(tmp_path) -> None:
+    custom = tmp_path / "c.yaml"
+    custom.write_text('version: "9.9.9"\nddpg: {tau: 1.0}\n', encoding="utf-8")
+    data = load_config(str(custom))
+    assert data["version"] == "9.9.9"
+    assert data["ddpg"]["tau"] == 1.0
