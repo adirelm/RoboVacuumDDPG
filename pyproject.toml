@@ -1,0 +1,39 @@
+[project]
+name = "robovacuumddpg"
+version = "1.0.0"
+description = "Bar-Ilan Vibe-Coding & RL Workshop — Assignment 5 (DDPG robotic-vacuum simulator on HouseExpo maps)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "torch>=2.2",
+    "numpy>=1.26",
+    "matplotlib>=3.8",
+    "pyyaml>=6.0",
+    "imageio>=2.34",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.6",
+]
+
+[tool.pytest.ini_options]
+addopts = "--cov=src --cov-report=term-missing --cov-fail-under=85"
+testpaths = ["tests"]
+
+# Stricter-than-spec Ruff (documented deviation, mirrors A4): 110/py311 + PL + RUF.
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "PL", "RUF"]
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+
+[tool.coverage.report]
+fail_under = 85

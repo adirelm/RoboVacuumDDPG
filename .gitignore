@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Virtual env (managed by uv)
+.venv/
+venv/
+
+# Build artifacts
+dist/
+build/
+*.egg
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+.DS_Store
+.ipynb_checkpoints/
+
+# Local environment
+.env
+.env.local
+
+# A5-specific: instructions/ is local-only (brief PDF, slides, lecturer feedback, cover-sheet sources)
+instructions/
+
+# Moodle cover sheet — contains PII (ID + name + self-grade); upload to Moodle ONLY, never commit
+adrl-001-ex*.pdf
+adrl-001-ex*.docx
+
+# HouseExpo full dataset (~35k JSON, ~GBs) — git-ignored; vendor only the curated subset under data/maps/
+data/houseexpo_full/
+data/raw/
+vendor/
+
+# Training artifacts (regenerable) — keep lightweight metrics/figures, ignore heavy checkpoints
+results/checkpoints/
+results/**/*.pt
+
+# Stray PDFs (allow only docs/assets/)
+*.pdf
+!docs/assets/*.pdf

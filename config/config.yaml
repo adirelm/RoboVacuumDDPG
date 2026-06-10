@@ -1,0 +1,60 @@
+version: "1.0.0"
+
+# ---- DDPG agent (from scratch; brief Lecture-09 DDPG) ----
+ddpg:
+  gamma: 0.99            # discount factor γ (justify in docs/ANALYSIS.md)
+  tau: 0.005             # Polyak soft-update coefficient τ (brief example value)
+  lr_actor: 1.0e-4       # actor learning rate
+  lr_critic: 1.0e-3      # critic learning rate (faster than actor — standard DDPG)
+  batch_size: 128
+  buffer_size: 1000000   # replay capacity
+  hidden_sizes: [256, 256]
+  grad_clip: 1.0         # gradient-norm clip (stability)
+  warmup_steps: 1000     # random actions before learning starts
+
+# ---- Exploration noise (brief mandates GAUSSIAN, not OU) ----
+noise:
+  type: gaussian
+  sigma_start: 0.2       # initial Gaussian std added to actions in [-1, 1]
+  sigma_end: 0.05
+  sigma_decay_steps: 50000
+
+# ---- 2D simulator (from scratch; NO Gymnasium / Gazebo) ----
+env:
+  n_rays: 16             # lidar rays; ablation knob (8 / 16 / 24)
+  heading_cue: "unit_vector"  # cos/sin of bearing to nearest uncleaned cell (2 dims; continuous, no ±π wrap)
+  # state_dim = n_rays + 2 (v, omega) + 2 (cos/sin heading) = 20 at the default 16 rays
+  ray_max: 5.0           # max lidar range (m); ray distances normalized by this
+  dt: 0.1                # kinematic integration timestep (s)
+  v_max: 0.5             # max linear velocity (m/s) = throttle * v_max
+  omega_max: 1.5         # max angular velocity (rad/s) = steer * omega_max
+  robot_radius: 0.17     # vacuum body radius (m)
+  clean_radius: 0.17     # cleaning footprint radius (m)
+  coverage_cell: 0.10    # coverage grid cell edge (m)
+  max_steps: 1000        # steps per episode
+
+# ---- Reward shaping: r = k_coverage*Δcells - k_collision*hit - k_step ----
+reward:
+  k_coverage: 1.0
+  k_collision: 10.0
+  k_step: 0.01
+
+# ---- Training / evaluation ----
+training:
+  episodes: 500
+  eval_every: 25
+  seeds: [42, 7, 123, 314, 271]
+
+# ---- HouseExpo maps (full ~35k git-ignored; curated subset vendored) ----
+maps:
+  dataset_repo: "https://github.com/TeaganLi/HouseExpo"
+  dataset_sha: "PINNED_AT_FETCH"     # stamped by scripts/fetch_houseexpo.py
+  train: ["room_single", "apt_small", "apt_multi"]
+  holdout: ["apt_large", "office"]
+
+paths:
+  maps_dir: "data/maps"
+  results_dir: "results"
+
+logging:
+  level: "INFO"
