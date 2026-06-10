@@ -73,11 +73,13 @@ class RoboVacuumSDK:
             "collisions": collisions,
         }
 
-    def evaluate(self, checkpoint_path: str, map_name: str, seed: int | None = None) -> dict:
-        # Contract amendment: build env+agent, load trained weights, greedy report.
+    def evaluate(self, checkpoint_path: str | None, map_name: str, seed: int | None = None) -> dict:
+        # Contract amendment: build env+agent, load trained weights when given,
+        # then greedy report. checkpoint_path=None evaluates a fresh agent.
         env = self.build_env(map_name, seed=seed)
         agent = DDPGAgent(env.state_dim, env.action_dim, self.cfg, seed=seed)
-        agent.load(checkpoint_path)
+        if checkpoint_path is not None:
+            agent.load(checkpoint_path)
         return self.coverage_report(agent, env)
 
     def trajectory(
