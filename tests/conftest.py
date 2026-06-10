@@ -17,6 +17,7 @@ from dataclasses import dataclass
 
 import pytest
 
+from src.env.house_map import HouseMap
 from src.utils.config_loader import load_config
 
 Segment = tuple[float, float, float, float]
@@ -50,3 +51,15 @@ def house_map() -> FakeHouseMap:
         (0.0, 4.0, 0.0, 0.0),
     ]
     return FakeHouseMap(walls=walls, bounds=(0.0, 0.0, 4.0, 4.0))
+
+
+@pytest.fixture
+def tiny_map() -> HouseMap:
+    """A 4 m x 4 m closed box as a real HouseMap (contract F12 alias of house_map)."""
+    walls = [
+        (0.0, 0.0, 4.0, 0.0),
+        (4.0, 0.0, 4.0, 4.0),
+        (4.0, 4.0, 0.0, 4.0),
+        (0.0, 4.0, 0.0, 0.0),
+    ]
+    return HouseMap(walls=walls, bounds=(0.0, 0.0, 4.0, 4.0))
