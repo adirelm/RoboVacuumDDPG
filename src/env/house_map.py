@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 
-Segment = tuple  # (x1, y1, x2, y2)
+Segment = tuple[float, float, float, float]  # (x1, y1, x2, y2)
 
 
 @dataclass

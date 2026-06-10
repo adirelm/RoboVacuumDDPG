@@ -20,8 +20,8 @@ OUT_PNG = "results/figures/trajectory.png"
 def render(
     walls: list[tuple[float, float, float, float]],
     path: list[tuple[float, float]],
+    clean_radius: float,
     out_png: str = OUT_PNG,
-    clean_radius: float = 0.17,
 ) -> str:
     Path(out_png).parent.mkdir(parents=True, exist_ok=True)
     fig, ax = plt.subplots(figsize=(6, 6), dpi=120)

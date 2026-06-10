@@ -41,8 +41,12 @@ seeds**. Exploratory runs may use any seed; they just cannot be cited.
 | Knob | Config key | Value |
 |---|---|---|
 | episodes | `training.episodes` | `500` |
-| eval cadence | `training.eval_every` | `25` (deterministic eval every 25 episodes) |
 | seeds | `training.seeds` | `[42, 7, 123, 314, 271]` |
+
+> **Simplification (implemented).** No in-loop periodic-eval cadence was wired up:
+> `Trainer.train` returns a full per-episode history (reward, coverage, critic
+> loss) and final greedy evaluation runs through `RoboVacuumSDK.evaluate`, so the
+> earlier `training.eval_every` knob was dropped from config rather than left dead.
 
 **Held-out generalization (design spec §6, maps from ADR-005).** The agent
 trains **only** on `maps.train = ["room_single", "apt_small", "apt_multi"]` and

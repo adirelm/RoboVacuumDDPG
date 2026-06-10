@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 
-Segment = tuple  # (x1, y1, x2, y2)
+from src.env.house_map import Segment  # single source of truth (4-float tuple)
 
 
 def _point_segment_distance(px: float, py: float, seg: Segment) -> float:

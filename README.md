@@ -205,7 +205,6 @@ reward:
 ```yaml
 training:
   episodes: 500
-  eval_every: 25
   seeds: [42, 7, 123, 314, 271]
 
 maps:
@@ -228,7 +227,7 @@ logging:
 | `noise` | Gaussian `type`, `sigma_start`/`sigma_end`/`sigma_decay_steps` |
 | `env` | `n_rays` (16; 8/16/24 ablation), `ray_max`, `dt`, `v_max`, `omega_max`, `robot_radius`, `clean_radius`, `coverage_cell`, `max_steps` |
 | `reward` | `k_coverage`, `k_collision`, `k_step` |
-| `training` | `episodes`, `eval_every`, the 5 seeds `[42, 7, 123, 314, 271]` |
+| `training` | `episodes`, the 5 seeds `[42, 7, 123, 314, 271]` |
 | `maps` | HouseExpo `dataset_repo`/`dataset_sha`, `train` + `holdout` plan lists |
 | `paths`, `logging` | I/O directories, log level |
 

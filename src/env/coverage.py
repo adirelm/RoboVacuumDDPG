@@ -8,7 +8,12 @@ import numpy as np
 
 
 class CoverageGrid:
-    """Boolean grid of cleanable cells over the map's free-space bounds."""
+    """Boolean grid of cells over the map's axis-aligned bounding box.
+
+    The denominator for `fraction()` is every cell in the bounding box. For the
+    convex box maps used here this equals the free-space; on a non-convex plan
+    it would also count cells inside walls (those stay uncleanable forever).
+    """
 
     def __init__(self, bounds, cell_size: float, clean_radius: float):
         self.xmin, self.ymin, xmax, ymax = bounds
@@ -32,7 +37,7 @@ class CoverageGrid:
         return count
 
     def fraction(self) -> float:
-        """Cleaned free-cells / total free-cells, in [0, 1]."""
+        """Cleaned cells / total cells in the bounding-box grid, in [0, 1]."""
         return float(self.cleaned.sum()) / float(self.cleaned.size)
 
     def nearest_uncleaned_bearing(self, x: float, y: float, theta: float) -> tuple[float, float]:

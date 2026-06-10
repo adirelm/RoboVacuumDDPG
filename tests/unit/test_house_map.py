@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import get_args, get_origin
 
 from src.env.house_map import HouseMap, Segment, load_house_map
 
@@ -57,5 +58,9 @@ def test_parse_is_deterministic(tmp_path):
     assert a.bounds == b.bounds
 
 
-def test_segment_alias_is_tuple_type():
-    assert Segment is tuple
+def test_segment_alias_is_four_float_tuple():
+    # Contract LAW: Segment = tuple[float, float, float, float] (single source
+    # of truth in house_map.py; raycast/collision import it).
+    assert Segment == tuple[float, float, float, float]
+    assert get_origin(Segment) is tuple
+    assert get_args(Segment) == (float, float, float, float)

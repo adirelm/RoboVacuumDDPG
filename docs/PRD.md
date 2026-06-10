@@ -143,9 +143,8 @@ across the config `training.seeds = [42, 7, 123, 314, 271]`.
   reported as mean ± CI across the five seeds. Coverage % is computed by
   `env/coverage.py` and surfaced via `RoboVacuumSDK.coverage_report`.
 - **O2 — Learning-curve trend**. Cumulative episode reward shows an
-  upward trend over `training.episodes = 500` (eval every
-  `training.eval_every = 25`), reported as mean ± CI over the five
-  seeds. This is the `learning_curve.png` deliverable.
+  upward trend over `training.episodes = 500`, reported as mean ± CI over
+  the five seeds. This is the `learning_curve.png` deliverable.
 - **O3 — Critic stability**. Critic loss vs training step does not
   diverge — the target-network + Polyak soft-update mechanism
   (`τ = 0.005`) keeps the TD target from chasing the online critic. This
@@ -293,8 +292,9 @@ brief-§ → F# → test mapping lives in `docs/TRACE.md`.
 
 - **F15 (Trainer, spec §4)**. `services/trainer.py` runs the custom
   training loop: collect (with Gaussian noise) → store in replay → update
-  → log, for `training.episodes = 500`, evaluating every
-  `training.eval_every = 25`. No `gymnasium`.
+  → log, for `training.episodes = 500`, returning a full per-episode
+  history; final greedy evaluation runs via `RoboVacuumSDK.evaluate` (no
+  in-loop eval cadence). No `gymnasium`.
 - **F16 (SDK single entry, spec §2, §4)**. `sdk/sdk.py` exposes
   `RoboVacuumSDK` with `build_env`, `train`, `evaluate`, `rollout`,
   `coverage_report` as the single business-logic entry point; CLI,
@@ -366,7 +366,7 @@ Inherited from `CLAUDE.md` Hard Constraints, plus A5-specific additions.
   constants (`n_rays`, `ray_max`, `dt`, `v_max`, `omega_max`,
   `robot_radius`, `clean_radius`, `coverage_cell`, `max_steps`), reward
   weights (`k_coverage`, `k_collision`, `k_step`), training settings
-  (`episodes`, `eval_every`, `seeds`), and map lists live in
+  (`episodes`, `seeds`), and map lists live in
   `config/config.yaml` (CLAUDE.md §4). Local UI/plot styling literals
   (matplotlib alpha / fontsize / dpi) stay local.
 - **N7**. Deterministic seeds. Training and evaluation seed Python

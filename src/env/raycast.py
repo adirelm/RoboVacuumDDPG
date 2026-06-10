@@ -6,7 +6,7 @@ import math
 
 import numpy as np
 
-Segment = tuple  # (x1, y1, x2, y2)
+from src.env.house_map import Segment  # single source of truth (4-float tuple)
 
 
 def _ray_segment_t(ox: float, oy: float, dx: float, dy: float, seg: Segment, max_range: float):  # noqa: PLR0913

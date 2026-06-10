@@ -104,7 +104,7 @@ matches the spec §4 tree **exactly**.
 | **ddpg / replay_buffer** | `ddpg/replay_buffer.py` | Uniform experience replay (`buffer_size=1000000`, sample `batch_size=128`) | No network forward; no reward computation |
 | **ddpg / noise** | `ddpg/noise.py` | **Gaussian** exploration noise added to actor action during collection (`sigma_start=0.2` → `sigma_end=0.05` over `sigma_decay_steps=50000`) — **NOT OU** (spec §5, ADR-003) | No OU process; no network code; no replay access |
 | **ddpg / agent** | `ddpg/agent.py` | `DDPGAgent`: `act()` (actor + Gaussian noise), `update()` (critic TD + DPG actor step, `grad_clip=1.0`), **Polyak soft-update(τ)** `θ_target = τ·θ + (1−τ)·θ_target` for both actor & critic targets (`τ=0.005`, `γ=0.99`, `lr_actor=1e-4`, `lr_critic=1e-3`) | No env stepping; no direct user I/O; no figure rendering |
-| **services / trainer** | `services/trainer.py` | Custom training loop: **collect → store → update → log**; `warmup_steps=1000` random actions before learning; multi-seed (`seeds=[42,7,123,314,271]`), `episodes=500`, `eval_every=25` | No `gymnasium`; no SB3; no direct user I/O |
+| **services / trainer** | `services/trainer.py` | Custom training loop: **collect → store → update → log**; `warmup_steps=1000` random actions before learning; multi-seed (`seeds=[42,7,123,314,271]`), `episodes=500` (no in-loop eval cadence — full per-episode history returned, final eval via `RoboVacuumSDK.evaluate`) | No `gymnasium`; no SB3; no direct user I/O |
 | **cost** | `cost/meter.py` | tiktoken / runtime cost accounting (V3 §11 (Costs)) | No RL logic; no env stepping |
 | **utils** | `utils/config_loader.py` | Single-source loader for `config/config.yaml` (CLAUDE.md §4) | No business logic; no hardcoded algorithm values |
 
@@ -128,7 +128,8 @@ Quoted from spec §3; defaults from `config/config.yaml`.
   - current `(v, ω)` — 2 dims.
   - a **heading cue** = `cos`/`sin` of the bearing to the nearest uncleaned
     cell in the robot frame — 2 dims, a **unit vector** (not a raw angle) so
-    it is continuous with no ±π wraparound (`env.heading_cue: unit_vector`).
+    it is continuous with no ±π wraparound (fixed representation, emitted
+    unconditionally by `state.py` — no config switch).
   - ⟹ 16 + 2 + 2 = **20 dims** (pinned; `state_dim = n_rays + 4`).
 - **Reward**: `r = k_coverage·(new cells cleaned) − k_collision·(collision)
   − k_step`, with config defaults `k_coverage=1.0`, `k_collision=10.0`,
@@ -192,7 +193,6 @@ reward:                  # r = k_coverage*Δcells - k_collision*hit - k_step
 
 training:
   episodes: 500
-  eval_every: 25
   seeds: [42, 7, 123, 314, 271]
 
 maps:                    # full ~35k git-ignored; curated subset vendored

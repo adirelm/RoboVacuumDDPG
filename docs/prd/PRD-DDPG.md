@@ -49,7 +49,7 @@ All values live in `config/config.yaml` per CLAUDE.md §4, read through
 | F5.15 | Actor output bound | **Tanh** → exactly [−1,1] | (architecture, `model/actor.py`) |
 | F5.16 | Critic input | **state ⊕ action** → scalar Q | (architecture, `model/critic.py`) |
 | F5.17 | Seeds per evaluation | **5** — `[42, 7, 123, 314, 271]` | `training.seeds` |
-| F5.18 | Training episodes / eval cadence | **500 episodes**, eval every **25** | `training.episodes`, `training.eval_every` |
+| F5.18 | Training episodes | **500 episodes** (no in-loop eval cadence; final eval via `RoboVacuumSDK.evaluate`) | `training.episodes` |
 
 **Citation discipline.** `τ = 0.005`, `γ = 0.99`, the actor-slower-than-critic
 LR split (`1e-4` / `1e-3`), uniform replay, and the deterministic target-policy

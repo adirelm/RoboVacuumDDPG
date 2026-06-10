@@ -68,7 +68,9 @@ is only trustworthy if the physics underneath is provably correct.
   - **current `(v, ω)`** normalized to `[−1, 1]` by `v_max` / `omega_max`;
   - a **heading cue** = `cos`/`sin` of the bearing to the nearest uncleaned
     cell in the robot frame (2 dims; a unit vector, no ±π wraparound).
-  Dimension is `n_rays + 4` = **20** at `n_rays=16` (pinned; `env.heading_cue: unit_vector`).
+  Dimension is `n_rays + 4` = **20** at `n_rays=16` (pinned; the heading cue is a
+  fixed `cos`/`sin` unit vector emitted unconditionally by `state.py` — not a
+  config-switchable representation).
 - **Reward** (scalar float) from `src/env/reward.py`:
   `r = k_cov·(new cells cleaned this step) − k_col·(1 if collision else 0) − k_step`.
 - **`done`** (bool) — `True` when `step_count == env.max_steps` or the
@@ -369,8 +371,9 @@ file ≤150 LOC.
   quantity — `Δcells` *is* the count of newly cleaned cells. PRD-SIM uses
   `Δcoverage ≡ Δcells` (integer) to remove ambiguity; no contradiction,
   just unified notation (§3.3).
-- **State dimensionality (pinned).** Spec §3 + `config.env.heading_cue: unit_vector`
-  fix the heading cue as a 2-component `cos`/`sin` unit vector, so
+- **State dimensionality (pinned).** Spec §3 fixes the heading cue as a fixed
+  2-component `cos`/`sin` unit vector (emitted unconditionally by `state.py`, no
+  config switch), so
   `state_dim = n_rays + 2 (v, ω) + 2 = 20` at `n_rays=16` (12/20/28 for 8/16/24
   rays). `env/state.py` builds it; `test_state_dim_is_20` pins it.
 - No value, filename, module name, or hyperparameter in this PRD departs
