@@ -18,14 +18,14 @@ def test_tick_increments_steps() -> None:
     m = RuntimeMeter()
     m.tick()
     m.tick(3)
-    assert m.steps == 4  # noqa: PLR2004
+    assert m.steps == 4
 
 
 def test_episode_increments_episodes() -> None:
     m = RuntimeMeter()
     m.episode()
     m.episode()
-    assert m.episodes == 2  # noqa: PLR2004
+    assert m.episodes == 2
 
 
 def test_elapsed_is_nonnegative_and_monotonic() -> None:
@@ -41,7 +41,7 @@ def test_summary_reports_counters_and_elapsed() -> None:
     m.tick(5)
     m.episode()
     summary = m.summary()
-    assert summary["steps"] == 5  # noqa: PLR2004
+    assert summary["steps"] == 5
     assert summary["episodes"] == 1
     assert summary["elapsed_s"] >= 0.0
 

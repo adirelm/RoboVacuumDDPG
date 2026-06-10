@@ -29,7 +29,7 @@ def _load_cached(cfg_path: str) -> dict:
 
 
 def load_config(path: str | None = None) -> dict:
-    """Load and cache the YAML config; repeated calls return the same dict object."""
+    """Load and cache the YAML config; repeated calls with the same path return the cached dict object."""
     cfg_path = path if path is not None else str(_DEFAULT_CONFIG_PATH)
     return _load_cached(cfg_path)
 
