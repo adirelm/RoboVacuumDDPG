@@ -40,3 +40,17 @@ def test_train_honors_warmup_no_update_before_threshold(tiny_map):
     assert history[0]["critic_loss"] == 0.0
     assert history[0]["critic_losses"] == []
     assert history[0]["steps"] == 1
+
+
+def test_noise_sigma_decays_after_warmup_steps(tiny_map):
+    # sigma must shrink during training: the trainer must call noise.decay() per
+    # post-warmup step (otherwise sigma stays pinned at sigma_start forever).
+    cfg = _tiny_cfg()
+    cfg["env"]["max_steps"] = 20
+    cfg["ddpg"]["warmup_steps"] = 2
+    cfg["noise"]["sigma_decay_steps"] = 50  # short horizon so decay is visible
+    env = VacuumEnv(tiny_map, cfg, seed=0)
+    agent = DDPGAgent(env.state_dim, env.action_dim, cfg, seed=0)
+    sigma_start = agent.noise.sigma_start
+    Trainer(env, agent, cfg).train(episodes=3)  # >> warmup steps total
+    assert agent.noise.sigma < sigma_start

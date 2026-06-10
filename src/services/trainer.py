@@ -41,6 +41,7 @@ class Trainer:
             self.agent.store(state, action, reward, next_state, done)
             self._global_step += 1
             if self._global_step >= self.warmup_steps:
+                self.agent.noise.decay()  # anneal exploration sigma once per learning step
                 metrics = self.agent.update()
                 if metrics:
                     critic_losses.append(metrics["critic_loss"])
