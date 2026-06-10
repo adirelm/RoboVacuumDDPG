@@ -32,6 +32,7 @@ env:
   clean_radius: 0.17     # cleaning footprint radius (m)
   coverage_cell: 0.10    # coverage grid cell edge (m)
   max_steps: 1000        # steps per episode
+  coverage_target: 0.9   # episode ends when this fraction of free cells is cleaned (or max_steps)
 
 # ---- Reward shaping: r = k_coverage*Δcells - k_collision*hit - k_step ----
 reward:
