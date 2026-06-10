@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 
 import numpy as np
 
@@ -10,12 +11,21 @@ import numpy as np
 class CoverageGrid:
     """Boolean grid of cells over the map's axis-aligned bounding box.
 
-    The denominator for `fraction()` is every cell in the bounding box. For the
-    convex box maps used here this equals the free-space; on a non-convex plan
-    it would also count cells inside walls (those stay uncleanable forever).
+    The denominator for `fraction()` is the count of REACHABLE free cells —
+    those whose centre lies inside the map free space per the optional `is_free`
+    callable (e.g. ``HouseMap.is_inside``). Cells inside walls / outside the
+    floor plan are excluded, so on a non-convex plan ``coverage_target`` stays
+    reachable. When `is_free` is omitted, every bounding-box cell counts as free,
+    preserving the legacy behaviour on convex box maps.
     """
 
-    def __init__(self, bounds, cell_size: float, clean_radius: float):
+    def __init__(
+        self,
+        bounds,
+        cell_size: float,
+        clean_radius: float,
+        is_free: Callable[[float, float], bool] | None = None,
+    ):
         self.xmin, self.ymin, xmax, ymax = bounds
         self.cell_size = cell_size
         self.clean_radius = clean_radius
@@ -25,6 +35,15 @@ class CoverageGrid:
         self.cx = self.xmin + (np.arange(self.nx) + 0.5) * cell_size
         self.cy = self.ymin + (np.arange(self.ny) + 0.5) * cell_size
         self.cleaned = np.zeros((self.nx, self.ny), dtype=bool)
+        # precompute the reachable-free mask once (centre inside the floor plan)
+        if is_free is None:
+            self.free = np.ones((self.nx, self.ny), dtype=bool)
+        else:
+            self.free = np.array(
+                [[bool(is_free(float(x), float(y))) for y in self.cy] for x in self.cx],
+                dtype=bool,
+            )
+        self.n_free = max(1, int(self.free.sum()))
 
     def mark(self, x: float, y: float) -> int:
         """Mark cells whose centre is within clean_radius; return NEWLY cleaned count."""
@@ -37,8 +56,8 @@ class CoverageGrid:
         return count
 
     def fraction(self) -> float:
-        """Cleaned cells / total cells in the bounding-box grid, in [0, 1]."""
-        return float(self.cleaned.sum()) / float(self.cleaned.size)
+        """Cleaned-and-free cells / total reachable-free cells, in [0, 1]."""
+        return float((self.cleaned & self.free).sum()) / float(self.n_free)
 
     def nearest_uncleaned_bearing(self, x: float, y: float, theta: float) -> tuple[float, float]:
         """(cos, sin) of the bearing to the nearest uncleaned cell, in the robot frame."""

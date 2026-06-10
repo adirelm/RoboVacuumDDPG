@@ -24,7 +24,12 @@ class VacuumEnv:
         self.e = cfg["env"]
         self.r = cfg["reward"]
         self.rng = np.random.default_rng(seed)
-        self.coverage = CoverageGrid(house_map.bounds, self.e["coverage_cell"], self.e["clean_radius"])
+        self.coverage = CoverageGrid(
+            house_map.bounds,
+            self.e["coverage_cell"],
+            self.e["clean_radius"],
+            is_free=house_map.is_inside,
+        )
         self.action_dim = 2
         self.state_dim = self.e["n_rays"] + 4
         self.pose = (0.0, 0.0, 0.0)
