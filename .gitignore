@@ -48,6 +48,9 @@ results/**/*.pt
 # Per-seed raw episode histories are ~12 MB each — git-ignored; the committed
 # metrics record is results/metrics_summary.json + the three figures.
 results/history/
+# Throwaway per-n_rays temp configs written by scripts/sweep_n_rays.py — the
+# committed sweep artifact is results/sweep_n_rays.json + the sensitivity figure.
+results/_sweep_tmp/
 
 # Stray PDFs (allow only docs/assets/)
 *.pdf

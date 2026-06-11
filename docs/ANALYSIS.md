@@ -161,6 +161,32 @@ keeps it finite.*
 | ΔReward (tail − early window) | ≈ +1000 − (≈ −2000) ≈ +3000 (collision band → positive plateau) |
 | Critic-loss tail (per-episode mean, range over seeds) | ≈ 12 – 26 (bounded, no divergence) |
 
+## Sensitivity analysis — lidar resolution (`n_rays`)
+
+A controlled one-at-a-time sweep over the `config.env.n_rays` knob (lidar ray
+count → `state_dim = n_rays + 4`), at a **reduced budget** (140 episodes, seed
+42, map `room_single`) to keep it cheap. `scripts/sweep_n_rays.py` →
+`results/sweep_n_rays.json`; figure `results/figures/sensitivity_n_rays.png`.
+
+| `n_rays` | `state_dim` | final-20 reward | final-20 coverage |
+|---:|---:|---:|---:|
+| 8  | 12 | −553.1 | 0.254 |
+| **16** | **20** | **+13.3** | 0.226 |
+| 24 | 28 | −516.5 | 0.189 |
+
+![n_rays sensitivity](../results/figures/sensitivity_n_rays.png)
+
+**Reading (honest, directional — single seed, 140-ep budget, not the converged
+500-ep regime of the headline run).** The **default 16 rays is the sweet spot**:
+it is the only setting that reaches non-negative reward inside the short budget.
+**24 rays** does *not* help here — the larger 28-dim observation slows the
+actor/critic at a fixed episode budget (it would likely catch up given more
+episodes); **8 rays** gives too little spatial information to avoid the early
+collisions that drag reward negative. Coverage is comparatively flat (~0.19–0.25),
+so the knob's main effect at this budget is *learning speed / reward*, not ceiling
+coverage. This confirms 16 as a defensible default (the §9.1 sensitivity evidence);
+a full multi-seed, convergence-scale sweep is future work.
+
 ## References
 Lillicrap et al. 2016 (arXiv:1509.02971); Silver et al. 2014 (ICML);
 Fujimoto et al. 2018 (TD3, arXiv:1802.09477); Li et al. 2019 HouseExpo

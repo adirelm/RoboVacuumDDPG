@@ -1,0 +1,24 @@
+{
+  "episodes": 140,
+  "seed": 42,
+  "map": "room_single",
+  "window": 20,
+  "8": {
+    "n_rays": 8,
+    "state_dim": 12,
+    "final_reward": -553.0500000000142,
+    "final_coverage": 0.25413747810858145
+  },
+  "16": {
+    "n_rays": 16,
+    "state_dim": 20,
+    "final_reward": 13.349999999999147,
+    "final_coverage": 0.22620402802101575
+  },
+  "24": {
+    "n_rays": 24,
+    "state_dim": 28,
+    "final_reward": -516.4500000000115,
+    "final_coverage": 0.1887478108581436
+  }
+}
