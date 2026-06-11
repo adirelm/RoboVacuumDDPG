@@ -9,10 +9,14 @@ from pathlib import Path
 
 import matplotlib
 
-from src.sdk.sdk import RoboVacuumSDK
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+from src.sdk.sdk import RoboVacuumSDK  # noqa: E402
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # noqa: E402
 
 OUT_PNG = "results/figures/trajectory.png"
 

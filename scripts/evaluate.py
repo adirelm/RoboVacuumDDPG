@@ -10,7 +10,11 @@ import json
 import sys
 from pathlib import Path
 
-from src.sdk.sdk import RoboVacuumSDK
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+from src.sdk.sdk import RoboVacuumSDK  # noqa: E402
 
 OUT_JSON = "results/holdout_eval.json"
 
