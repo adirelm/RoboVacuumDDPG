@@ -1,7 +1,12 @@
+from pathlib import Path
+
 import numpy as np
 
-from src.env.house_map import HouseMap
+from src.env.house_map import HouseMap, load_house_map
 from src.env.vacuum_env import VacuumEnv
+from src.utils.config_loader import load_config
+
+_REPO = Path(__file__).resolve().parents[2]
 
 # 4x4 square room; walls on the four edges
 WALLS = [
@@ -90,3 +95,22 @@ def test_reset_is_deterministic_for_same_seed():
     a = VacuumEnv(HMAP, CFG, seed=7).reset()
     b = VacuumEnv(HMAP, CFG, seed=7).reset()
     assert np.array_equal(a, b)
+
+
+def test_env_runs_on_real_curated_houseexpo_map():
+    # Smoke test: VacuumEnv reset/step on a REAL, non-convex HouseExpo plan
+    # (apt_multi, room_num=5) with the project config — no error, finite state,
+    # and the robot spawns inside the polygon (point-in-polygon free space).
+    hm = load_house_map(str(_REPO / "data" / "maps" / "apt_multi.json"))
+    assert len(hm.walls) > 4  # real interior contour, not a 4-edge box
+    env = VacuumEnv(hm, load_config(), seed=42)
+    s = env.reset()
+    assert s.shape == (env.state_dim,)
+    assert hm.is_inside(env.pose[0], env.pose[1])  # spawned in real free space
+    for _ in range(20):
+        s, r, done, info = env.step(np.array([1.0, 0.2], dtype=np.float32))
+        assert np.all(np.isfinite(s))
+        assert np.isfinite(r)
+        if done:
+            break
+    assert 0.0 <= info["coverage"] <= 1.0
