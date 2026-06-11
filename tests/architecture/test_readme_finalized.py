@@ -1,6 +1,7 @@
 """Doc contract (spec §7/§10, TODO T04-05): README is the submission-report
 shell — embeds the three figures, the uv install/run + SDK usage, links the
-analysis docs, and keeps the honest PENDING convergence framing.
+analysis docs, and (training complete) carries the honest real-results summary
+with no PENDING placeholders left.
 """
 
 from __future__ import annotations
@@ -23,4 +24,12 @@ def test_readme_has_install_run_sdk_and_links() -> None:
     assert "RoboVacuumSDK" in text
     assert "docs/ANALYSIS.md" in text
     assert "docs/THEORY.md" in text
-    assert "PENDING" in text
+    # Training complete: no PENDING placeholders left in the report shell.
+    assert "PENDING" not in text
+
+
+def test_readme_carries_honest_results_summary() -> None:
+    text = _DOC.read_text(encoding="utf-8")
+    # The one-line honest summary: learns on room_single, does not yet generalize.
+    assert "691.3" in text
+    assert "room_single" in text
