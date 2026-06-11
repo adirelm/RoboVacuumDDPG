@@ -13,7 +13,22 @@ Polyak math, Tanh bounds, critic shape).
 ## 2. Performance Efficiency
 Small MLPs (`hidden_sizes = [256, 256]`), vectorized ray–segment math
 (`src/env/raycast.py`), coarse coverage grid (`coverage_cell = 0.10`). Runtime
-envelope tracked in `docs/COST_ANALYSIS.md` §4.
+envelope tracked in `docs/COST_ANALYSIS.md` §4 (~40–80 min/seed CPU, ≈ 4 h for
+all 5 seeds).
+
+**§15 — Parallelism (honest framing).** Training is **single-process, CPU-only**;
+the torch nets are tiny, so the per-step CPU hotspot is **lidar raycasting**
+(`src/env/raycast.py`, vectorized over wall segments per ray), not the gradient
+update. The five seeds `[42, 7, 123, 314, 271]` are **embarrassingly parallel** —
+each is an independent run writing its own `results/history/seed_*.json`, sharing
+no state — and could trivially be fanned out across processes (e.g.
+`multiprocessing` / one process per seed) to cut the ≈ 4 h wall-clock to roughly
+one seed's time. We deliberately left them **sequential** for reproducibility and
+simplicity: a single deterministic process per seed makes the seeded results easy
+to reproduce and audit, and the ≈ 4 h budget did not justify the added
+orchestration. Within a single episode the step loop is inherently sequential
+(each pose depends on the last), so the realistic parallelism axis is *across
+seeds*, not within a run.
 
 ## 3. Compatibility
 Pure Python + PyTorch/NumPy/Matplotlib; no Gymnasium/Gazebo/SB3 coupling
@@ -47,8 +62,12 @@ config-driven (`config/config.yaml`) so the `n_rays` ablation (8/16/24) and all
 hyperparameters change without editing source.
 
 ## 9. Honest limitations
-- Convergence numbers are **PENDING** until the seeded run completes; partial
-  convergence will be reported honestly (spec §10), not masked.
+- **Single-map training overfits.** Trained on `room_single` only, the policy
+  reaches ≈ 0.39 coverage / 691 ± 443 reward there but transfers poorly to the
+  held-out maps (`apt_large` 0.0032, `office` 0.0028 coverage) — the state is
+  map-agnostic, so it memorizes one map's sweep. See `docs/ANALYSIS.md`.
+- **Seed sensitivity.** Seed 271 did not lock in (−175.5 tail reward vs 760–1052
+  for the other four), widening the across-seed σ; reported, not dropped.
 - Raycasting cost grows with map complexity; mitigated by capped ray count and
   a coarse coverage grid, but very large held-out plans may slow eval.
 - Security scope is "no secrets / no PII / offline" — there is no adversarial
