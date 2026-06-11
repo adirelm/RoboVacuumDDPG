@@ -567,7 +567,7 @@ leaves an auditable artefact. Definition-of-done detail lives in `TODO.md`.
   optional sensor-resolution ablation via `n_rays`. DoD: figures exist
   (>1 KB), analysis numbers cite seed/episode/CI.
 - **Phase 5 — Submission.** `docs/TRACE.md` full coverage, README, tag
-  `1.0.0`, share repo read access with `@rmisegal`, fill the
+  `1.0.0`, share repo read access with the lecturer's GitHub handle `@rmisegal`, fill the
   Moodle cover sheet `adrl-001-ex05.pdf` (numeric self-grade on the PDF
   only). DoD: clean-checkout green build; §5.2 project-level DoD met.
 

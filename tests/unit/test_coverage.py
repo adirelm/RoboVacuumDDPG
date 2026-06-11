@@ -65,6 +65,21 @@ def test_fraction_default_is_whole_bbox_backward_compatible():
     assert grid.fraction() == 1.0
 
 
+def test_bearing_ignores_unreachable_nonfree_cells():
+    # left half free (x < 2), right half wall/void. Clean ALL reachable free
+    # cells; the bearing must report "done" (0,0) rather than point at the
+    # uncleanable void half (regression: bearing must use the free mask too).
+    def is_free(x: float, y: float) -> bool:
+        return x < 2.0
+
+    grid = CoverageGrid(BOUNDS, CELL, CLEAN_R, is_free=is_free)
+    for x in [c * CELL for c in range(20)]:  # x in [0, 1.9] -> free half
+        for y in [c * CELL for c in range(41)]:
+            grid.mark(x, y)
+    assert grid.fraction() == 1.0
+    assert grid.nearest_uncleaned_bearing(1.0, 2.0, 0.0) == (0.0, 0.0)
+
+
 def test_bearing_is_in_robot_frame():
     # nearest uncleaned cell straight ahead in world (+x); robot heading +x ->
     # robot-frame bearing ~ (1, 0). Heading rotated by pi/2 -> bearing ~ (0, -1).

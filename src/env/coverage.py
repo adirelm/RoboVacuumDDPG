@@ -60,8 +60,13 @@ class CoverageGrid:
         return float((self.cleaned & self.free).sum()) / float(self.n_free)
 
     def nearest_uncleaned_bearing(self, x: float, y: float, theta: float) -> tuple[float, float]:
-        """(cos, sin) of the bearing to the nearest uncleaned cell, in the robot frame."""
-        unclean = ~self.cleaned
+        """(cos, sin) of the bearing to the nearest uncleaned cell, in the robot frame.
+
+        Only REACHABLE free cells count as targets (``self.free & ~self.cleaned``),
+        matching `fraction()` and the done-condition; otherwise the cue would point
+        the policy at wall/exterior cells it can never clean.
+        """
+        unclean = self.free & ~self.cleaned
         if not unclean.any():
             return (0.0, 0.0)
         ix, iy = np.where(unclean)

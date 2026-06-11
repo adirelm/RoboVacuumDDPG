@@ -16,4 +16,5 @@ def test_prompts_doc_skeleton() -> None:
     assert "| Prompt | Commit | Human-judgment annotation |" in text
     for phase in ("Phase 0", "Phase 1", "Phase 2", "Phase 3", "Phase 4"):
         assert phase in text, f"missing phase row group: {phase}"
-    assert "PENDING" in text
+    # Finalized: every phase's Commit cell carries real SHAs, no leftover stubs.
+    assert "PENDING" not in text, "PROMPTS.md still has a PENDING commit stub"

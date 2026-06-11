@@ -37,7 +37,7 @@ Signatures are pinned in [`_contract.md`](_contract.md) — **LAW**. Its *Contra
 > the ≤150-LOC file-size guard, shared pytest fixtures (`cfg`, a 4-wall synthetic
 > `HouseMap`), and the CI workflow. TDD throughout (RED → GREEN → REFACTOR). `uv` only.
 > All absolute paths below are under the repo root
-> `"/Users/REDACTED-USER/Library/CloudStorage/GoogleDrive-REDACTED-EMAIL/My Drive/Academy/בר אילן תואר שני/סדנה בוייב קודינג/Assignment5-RoboVacuumDDPG"`.
+> `"<REPO_ROOT>"`.
 
 ### Task 0.1: Cached config loader (`load_config` + `get`)
 
@@ -553,7 +553,7 @@ and self-contained config dicts / temp JSON, so Phase 1 does NOT depend on
 No `gymnasium` / `gazebo` / SB3 anywhere (spec §1, FR-1). `uv` only.
 
 All commands are run from the repo root
-`/Users/REDACTED-USER/Library/CloudStorage/GoogleDrive-REDACTED-EMAIL/My Drive/Academy/בר אילן תואר שני/סדנה בוייב קודינג/Assignment5-RoboVacuumDDPG`.
+`<REPO_ROOT>`.
 
 ---
 
@@ -2202,9 +2202,9 @@ class DDPGAgent:
 > on **synthetic inputs**; the training scripts get an `episodes=1` smoke test.
 >
 > **Contract is LAW.** All signatures come verbatim from
-> `"/Users/REDACTED-USER/Library/CloudStorage/GoogleDrive-REDACTED-EMAIL/My Drive/Academy/בר אילן תואר שני/סדנה בוייב קודינג/Assignment5-RoboVacuumDDPG/docs/superpowers/plans/_contract.md"`.
+> `"<REPO_ROOT>/docs/superpowers/plans/_contract.md"`.
 > Config keys come from
-> `"/Users/REDACTED-USER/Library/CloudStorage/GoogleDrive-REDACTED-EMAIL/My Drive/Academy/בר אילן תואר שני/סדנה בוייב קודינג/Assignment5-RoboVacuumDDPG/config/config.yaml"`.
+> `"<REPO_ROOT>/config/config.yaml"`.
 > `uv` only. No `gymnasium`, no SB3. Every `.py` ≤ 150 LOC.
 >
 > **Prerequisites (must be GREEN before Phase 3):** Phase 1 `src/env/*`
@@ -3404,7 +3404,7 @@ the **analysis/quality/cost/UX docs**, the **PROMPTS** log skeleton, the
 green) + tag `v1.0.0` + the `adrl-001-ex05.pdf` cover sheet.
 
 All paths are absolute under the repo root
-`/Users/REDACTED-USER/Library/CloudStorage/GoogleDrive-REDACTED-EMAIL/My Drive/Academy/בר אילן תואר שני/סדנה בוייב קודינג/Assignment5-RoboVacuumDDPG/`.
+`<REPO_ROOT>/`.
 Commands are run from that root with `uv` only. Contract signatures
 (`src/sdk/sdk.py::RoboVacuumSDK`, `src/model/actor.py::Actor`,
 `src/ddpg/agent.py::DDPGAgent.soft_update`, `src/utils/config_loader.py::load_config/get`)

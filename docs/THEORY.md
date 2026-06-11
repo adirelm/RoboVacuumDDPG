@@ -25,10 +25,11 @@ $Q_\varphi(s,a)$ that scores it — an actor-critic instantiation of the
 Deterministic Policy Gradient theorem (Silver et al. 2014).
 
 **State** (spec §3): $s = [\,d_1/d_{\max}, \dots, d_{n}/d_{\max},\; v,\; \omega,\;
-\text{heading-cue}\,]$ — $n$ lidar ray distances (default $n=16$,
+\cos\beta,\; \sin\beta\,]$ — $n$ lidar ray distances (default $n=16$,
 `env.n_rays`) normalized by $d_{\max}=5.0$ m (`env.ray_max`), the current
-linear/angular speed $(v,\omega)$, and a heading cue toward the nearest
-uncleaned cell.
+linear/angular speed $(v,\omega)$, and the **two-component** $(\cos\beta,
+\sin\beta)$ unit-vector bearing $\beta$ toward the nearest uncleaned cell. With
+$n=16$ this is $16 + 2 + 2 = \mathbf{20}$ dimensions (`state_dim = n\_rays + 4`).
 
 **Action → kinematics** (spec §3, unicycle model): $v = \text{throttle}\cdot
 V_{\max}$, $\omega = \text{steer}\cdot \Omega_{\max}$ with $V_{\max}=0.5$
@@ -116,6 +117,17 @@ across a `reset()`. The bootstrap action is the **deterministic** target-actor
 output $\mu_{\theta'}(s')$ — there is no expectation over an action
 distribution, which is what makes DDPG's target cheaper than a stochastic
 actor-critic's.
+
+> **Known simplification (time-limit vs. true termination).** `VacuumEnv`
+> reports a single `done` for *both* the goal (coverage target) and the
+> `max_steps` time-limit, and the mask zeroes the bootstrap for both. Because
+> the coverage target is rarely reached in this run, most episodes end by
+> time-limit, so the value of bootstrapping at a non-terminal cutoff state is
+> dropped on each episode's last transition — a slight low-bias on that one
+> transition per 1000. The textbook-correct treatment separates *termination*
+> from *truncation* and only masks true terminals; we keep the single flag for
+> simplicity and note the deviation rather than hide it. Impact is bounded
+> (1/1000 of transitions) and does not change the qualitative results.
 
 **Sealed hyperparameter:** $\gamma = 0.99$ (`config.ddpg.gamma`; asserted at
 `DDPGAgent.__init__`).
@@ -210,9 +222,12 @@ Q3). Hard updates would correspond to $\tau=1$.
 value), asserted at `DDPGAgent.__init__`. A dedicated unit test checks the
 Polyak math element-wise (spec §8).
 
-Implementation: `src/ddpg/agent.py` `soft_update(target, source, tau)` —
-`target_param.data.copy_(tau * source_param.data + (1 - tau) *
-target_param.data)`, applied to both actor and critic targets.
+Implementation: `src/ddpg/agent.py:75-82`, `DDPGAgent.soft_update(self)` — for
+each `(online, target)` in `[(actor, actor_target), (critic, critic_target)]`,
+under `torch.no_grad()`:
+`pt.mul_(1.0 - self.tau).add_(self.tau * po)` (in-place Polyak update of each
+target parameter `pt` toward its online counterpart `po`). Called once per
+learning step from `update()` (agent.py:72).
 
 ---
 
@@ -285,8 +300,9 @@ single entry point (`build_env`, `train`, `evaluate`, `rollout`,
 ## 9  References
 
 - Lillicrap, T. P., Hunt, J. J., Pritzel, A., Heess, N., Erez, T., Tassa, Y.,
-  Silver, D., & Wierstra, D. (2015). *Continuous Control with Deep Reinforcement
-  Learning* (DDPG). arXiv:1509.02971.
+  Silver, D., & Wierstra, D. *Continuous Control with Deep Reinforcement
+  Learning* (DDPG). arXiv:1509.02971 (2015); published at ICLR 2016. (In-text
+  citations use the ICLR-2016 year.)
 - Silver, D., Lever, G., Heess, N., Degris, T., Wierstra, D., & Riedmiller, M.
   (2014). *Deterministic Policy Gradient Algorithms* (DPG). *ICML 2014*.
 - Li, T., Ho, D., Li, C., Zhu, D., Wang, C., & Meng, M. Q.-H. (2019).

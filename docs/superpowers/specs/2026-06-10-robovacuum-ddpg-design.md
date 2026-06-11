@@ -21,7 +21,7 @@ excellence-maxed** (full V3 compliance + research extras; target ~90+).
 ## 2. Repo & conventions
 
 - New public repo **github.com/adirelm/RoboVacuumDDPG**, group code `adrl-001`,
-  share read access with `@rmisegal`. Submission cover sheet
+  share read access with the lecturer's GitHub handle `@rmisegal`. Submission cover sheet
   `adrl-001-ex05.pdf` (official Moodle template; self-grade only on the PDF).
 - Same V3 scaffold as A4: `uv` only · TDD (RED→GREEN→REFACTOR) · every `.py`
   **≤150 LOC** (tests included) · **≥85%** coverage (`fail_under=85`) · **0** Ruff

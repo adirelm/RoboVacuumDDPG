@@ -25,11 +25,15 @@ of training); coverage is the fraction of free cells cleaned per episode.
 | **Across-seed** | **691.3 ± 443.1** | **≈ 0.39 (39%)** | 1239–1328 |
 
 (± is population standard deviation over the 5 seeds.) **Convergence:** the
-across-seed mean reward starts deeply negative (≈ −2000 to −10000 over the
+across-seed mean reward starts deeply negative (≈ −2000 to −10000 raw over the
 first ~10–15 episodes, when the actor still drives the body into walls and eats
-the `k_collision = 10` penalty repeatedly), crosses +500 by ~episode 97, and
-holds a sustained positive level (≈ +1000, rolling-10 minimum above zero) from
-**~episode 130** onward — see the learning curve below.
+the `k_collision = 10` penalty repeatedly); the **rolling-10 across-seed mean**
+crosses +500 by ~episode 96, climbs through zero into sustained positive
+territory around **~episode 130**, and holds a positive across-seed level of
+**≈ +650–700** thereafter. That ≈ +650–700 is the *5-seed mean*: the four
+locked-in seeds individually sit at ≈ +900–1050, while seed-271 (−175.5) drags
+the mean down — and the mean still shows occasional negative excursions late in
+training (it is not a flat plateau). See the learning curve below.
 
 **Honest outlier (spec §10).** Seed **271** is the one seed that did not lock in:
 its tail reward is **−175.5** (mean coverage 0.269), and it is the sole reason the
@@ -40,9 +44,10 @@ seed and this run is not uniformly converged. We report it rather than dropping
 it. The other four seeds cluster at 760–1052 reward / 0.39–0.47 coverage.
 
 ![Learning curve](../results/figures/learning_curve.png)
-*Cumulative reward vs episode, mean ± 95% CI over the 5 seeds. Deeply negative
-early (collision-dominated), converging to ≈ +1000 by ~episode 130 and holding
-positive. The wide CI band reflects the seed-271 spread.*
+*Across-seed reward vs episode — raw per-episode mean (light) with the rolling-10
+mean (bold), plus the ± 95% CI band. Deeply negative early (collision-dominated);
+the rolling mean climbs through zero around ~episode 130 and holds a positive
+across-seed level of ≈ +650–700. The wide CI band reflects the seed-271 spread.*
 
 ![Trajectory](../results/figures/trajectory.png)
 *Greedy rollout of the trained **seed-42** policy on `room_single`
@@ -68,7 +73,7 @@ on the unseen maps. The zero collisions are *not* evidence of competence: the
 agent simply learned the `room_single` heading/turn cadence and replays a tiny,
 safe loop that happens to avoid walls but cleans almost nothing of a larger,
 differently-shaped floor. The 20-dim state is **map-agnostic** (16 lidar rays +
-`(v, ω)` + a local heading cue to the nearest uncleaned cell) — it carries no
+`(v, ω)` + the `(cos, sin)` bearing to the nearest uncleaned cell = 16+2+2) — it carries no
 global map identity — so a single-map-trained actor has no signal to adapt its
 gross sweep pattern to a new boundary. Closing this would require **multi-map /
 map-conditioned training** (training across the full `maps.train` set, or
@@ -140,20 +145,23 @@ target networks** updated by Polyak averaging `θ_t ← τθ + (1−τ)θ_t`
 "chasing a moving target" feedback loop that makes a single-network critic
 diverge.
 
-The evidence is the **critic-loss curve**: across all 5 seeds the per-step MSE
-stays **bounded** — its per-episode mean sits in the low tens (final-20-episode
-means 12–26 across seeds; see `results/metrics_summary.json`) with no runaway
-blow-up, even as the reward climbs by three orders of magnitude. There is a mild
-*rise* in the loss band late in training (the 95% CI widens as some seeds chase
-higher-magnitude returns), but it never diverges — the soft target keeps the
-regression problem stationary enough to stay finite. With τ = 1 (hard copy every
-step) or no target net at all, this curve would be expected to blow up; it does
+The evidence is the **critic-loss curve**, read as two views of the same signal.
+The **per-episode-mean** critic MSE stays in the **low tens** across all 5 seeds
+(final-20-episode means **12–26**; `results/metrics_summary.json`). The
+**per-step** MSE that the figure plots is noisier — individual gradient updates
+reach **~10³–10⁴** — and it rises mildly late in training as the returns (and
+hence the TD targets) grow in magnitude. The key point is that *neither* view
+**diverges**: there is no runaway blow-up even as the reward climbs by three
+orders of magnitude. The slow-moving Polyak target (τ = 0.005) keeps the
+regression problem stationary enough to stay finite; with τ = 1 (hard copy every
+step) or no target net at all, the curve would be expected to blow up — it does
 not.
 
 ![Critic loss](../results/figures/critic_loss.png)
-*Critic MSE vs gradient-update step, mean ± 95% CI over the 5 seeds. Bounded
-throughout (~10² scale, no divergence) — the Polyak-averaged target is what
-keeps it finite.*
+*Per-episode-mean critic MSE vs episode over the 5 seeds (mean ± 95% CI). It
+holds in the low tens (≈ 12–26) and never diverges; the raw per-step MSE is
+noisier (individual updates reach ~10³–10⁴) but also stays finite — the
+Polyak-averaged target (τ = 0.005) is what keeps it bounded.*
 
 | Metric (final-20-episode window, 5 seeds) | Value |
 |---|---|
@@ -188,6 +196,6 @@ coverage. This confirms 16 as a defensible default (the §9.1 sensitivity eviden
 a full multi-seed, convergence-scale sweep is future work.
 
 ## References
-Lillicrap et al. 2016 (arXiv:1509.02971); Silver et al. 2014 (ICML);
+Lillicrap et al. (arXiv:1509.02971, 2015; ICLR 2016); Silver et al. 2014 (ICML);
 Fujimoto et al. 2018 (TD3, arXiv:1802.09477); Li et al. 2019 HouseExpo
 (arXiv:1903.09845).

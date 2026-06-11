@@ -52,23 +52,37 @@ def step_series(history_dir: str) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     return steps, mean, ci
 
 
+def episode_series(history_dir: str) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Return (episodes, mean, ci) of the PER-EPISODE-mean critic loss.
+
+    This is the bounded "critic loss vs convergence time" view (the 12-26 tail
+    in metrics_summary.json). Plotting the per-episode mean — rather than the
+    raw per-step MSE, which spikes to ~10e3-10e4 on individual updates — keeps
+    the figure consistent with the Q3 "bounded, no divergence" claim.
+    """
+    files = sorted(Path(history_dir).glob("seed_*.json"))
+    rows = [[float(r["critic_loss"]) for r in json.loads(fp.read_text(encoding="utf-8"))] for fp in files]
+    n_ep = min(len(r) for r in rows)
+    matrix = np.asarray([r[:n_ep] for r in rows], dtype=np.float64)
+    episodes = np.arange(n_ep)
+    mean = matrix.mean(axis=0)
+    n = matrix.shape[0]
+    sem = matrix.std(axis=0, ddof=1) / np.sqrt(n) if n > 1 else np.zeros_like(mean)
+    return episodes, mean, 1.96 * sem
+
+
 def render(history_dir: str = HISTORY_DIR, out_png: str = OUT_PNG) -> str:
-    steps, mean, ci = step_series(history_dir)
+    episodes, mean, ci = episode_series(history_dir)
     Path(out_png).parent.mkdir(parents=True, exist_ok=True)
     n_seeds = len(sorted(Path(history_dir).glob("seed_*.json")))
     fig, ax = plt.subplots(figsize=(7, 4), dpi=120)
-    ax.plot(steps, mean, color="#d62728", label="mean critic loss")
     ax.fill_between(
-        steps,
-        np.maximum(mean - ci, 0.0),
-        mean + ci,
-        color="#d62728",
-        alpha=0.25,
-        label="95% CI",
+        episodes, np.maximum(mean - ci, 0.0), mean + ci, color="#d62728", alpha=0.2, label="95% CI"
     )
-    ax.set_xlabel("gradient-update step")
-    ax.set_ylabel("critic MSE loss")
-    ax.set_title(f"Critic loss (mean +/- 95% CI over {n_seeds} seeds)")
+    ax.plot(episodes, mean, color="#d62728", linewidth=1.8, label="per-episode-mean critic loss")
+    ax.set_xlabel("episode (convergence time)")
+    ax.set_ylabel("critic MSE loss (per-episode mean)")
+    ax.set_title(f"Critic loss — per-episode mean +/- 95% CI ({n_seeds} seeds)")
     ax.legend()
     fig.tight_layout()
     fig.savefig(out_png)

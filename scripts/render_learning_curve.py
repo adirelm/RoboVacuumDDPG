@@ -37,16 +37,29 @@ def mean_ci(history_dir: str, key: str) -> tuple[np.ndarray, np.ndarray, np.ndar
     return episodes, mean, ci
 
 
+def rolling(y: np.ndarray, w: int = 10) -> np.ndarray:
+    """Trailing rolling mean (expanding for the first w-1 points), same length."""
+    c = np.cumsum(y, dtype=np.float64)
+    out = np.empty_like(c)
+    k = min(w, len(y))
+    out[:k] = c[:k] / (np.arange(k) + 1)
+    out[k:] = (c[k:] - c[:-k]) / k
+    return out
+
+
 def render(history_dir: str = HISTORY_DIR, out_png: str = OUT_PNG) -> str:
     episodes, mean, ci = mean_ci(history_dir, "reward")
+    smooth = rolling(mean, 10)
     Path(out_png).parent.mkdir(parents=True, exist_ok=True)
     n_seeds = len(sorted(Path(history_dir).glob("seed_*.json")))
     fig, ax = plt.subplots(figsize=(7, 4), dpi=120)
-    ax.plot(episodes, mean, color="#1f77b4", label="mean reward")
-    ax.fill_between(episodes, mean - ci, mean + ci, color="#1f77b4", alpha=0.25, label="95% CI")
+    ax.fill_between(episodes, mean - ci, mean + ci, color="#1f77b4", alpha=0.18, label="95% CI")
+    ax.plot(episodes, mean, color="#1f77b4", alpha=0.35, linewidth=0.8, label="per-episode mean")
+    ax.plot(episodes, smooth, color="#1f77b4", linewidth=2.2, label="rolling-10 mean")
+    ax.axhline(0.0, color="grey", linewidth=0.8, linestyle="--")
     ax.set_xlabel("episode")
     ax.set_ylabel("cumulative reward")
-    ax.set_title(f"Learning curve (mean +/- 95% CI over {n_seeds} seeds)")
+    ax.set_title(f"Learning curve (across-seed mean +/- 95% CI, {n_seeds} seeds)")
     ax.legend()
     fig.tight_layout()
     fig.savefig(out_png)

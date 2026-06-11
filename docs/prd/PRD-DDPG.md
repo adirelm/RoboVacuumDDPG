@@ -103,10 +103,12 @@ by Polyak averaging with `τ = 0.005` (F5.2):
 φ_target ← τ · φ + (1 − τ) · φ_target        # target critic
 ```
 
-Implemented in `src/ddpg/agent.py` as an in-place `soft_update(online,
-target, tau)` over `zip(target.parameters(), online.parameters())`. The
-submission summary cites the **exact line numbers** of this method (spec §5.2).
-Acceptance test in §5.1 verifies the math element-wise.
+Implemented in `src/ddpg/agent.py:75-82` as the parameterless
+`DDPGAgent.soft_update(self)`: it loops over `[(actor, actor_target),
+(critic, critic_target)]` and, under `torch.no_grad()`, applies the in-place
+Polyak step `pt.mul_(1.0 - self.tau).add_(self.tau * po)` to each target
+parameter `pt` (line 82). The acceptance test in §5.1 verifies the math
+element-wise.
 
 ### 3.4 The brief's FOUR code-requirement checkpoints
 

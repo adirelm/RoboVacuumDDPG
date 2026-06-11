@@ -76,12 +76,13 @@ the SDK — no logic lives in UIs. Public surface:
 ```python
 from src.sdk.sdk import RoboVacuumSDK
 
-sdk = RoboVacuumSDK()                 # reads config/config.yaml via the config loader
-env = sdk.build_env()                 # custom VacuumEnv (NO gym) — reset/step 4-tuple
-sdk.train()                           # collect → store → update → log
-sdk.evaluate()                        # multi-seed / held-out generalization eval
-sdk.rollout()                         # one deterministic trajectory (for render_trajectory)
-sdk.coverage_report()                 # cleaned-cell % accounting
+sdk = RoboVacuumSDK()                                  # reads config/config.yaml via the config loader
+env = sdk.build_env("room_single", seed=42)            # custom VacuumEnv (NO gym) — reset/step 4-tuple
+history = sdk.train(seed=42)                            # collect → store → update → log; returns per-episode history
+report = sdk.evaluate("results/checkpoints/seed_42.pt", "apt_large", seed=42)  # greedy held-out eval
+path = sdk.trajectory("room_single", checkpoint_path="results/checkpoints/seed_42.pt", seed=42)  # (x,y) path
+walls = sdk.map_walls("room_single")                   # wall segments for the trajectory figure
+# lower-level: sdk.rollout(agent, env) and sdk.coverage_report(agent, env) take a built agent+env
 ```
 
 ### MDP at a glance (single source of truth: the design spec)
@@ -90,7 +91,7 @@ sdk.coverage_report()                 # cleaned-cell % accounting
 |---|---|
 | **Action** | `a ∈ [−1,1]²` = `[throttle, steer]`; Actor is **Tanh**-bounded → exactly [−1,1] |
 | **Unicycle** | `v = throttle·v_max`, `ω = steer·omega_max`; `x+=v·cosθ·Δt; y+=v·sinθ·Δt; θ+=ω·Δt` |
-| **State** (20-dim, normalized) | **16 lidar ray distances** (/`ray_max`) + current `(v, ω)` + heading cue to nearest uncleaned cell |
+| **State** (20-dim, normalized) | **16 lidar ray distances** (/`ray_max`) + current `(v, ω)` + **`(cos, sin)`** bearing to the nearest uncleaned cell → 16 + 2 + 2 = **20** |
 | **Reward** | `r = k_coverage·Δcells − k_collision·collision − k_step` |
 | **Episode** | ends at `max_steps` (or optional coverage target); `reset()` re-spawns at a random free cell, clears the per-episode coverage grid |
 
@@ -123,15 +124,21 @@ smooth continuous coverage. Trained **seed-42** policy on `room_single`
 seeds `[42, 7, 123, 314, 271]`:
 
 > ![Learning curve, mean ± 95% CI over 5 seeds](results/figures/learning_curve.png)
-> *Deeply negative early (collision-dominated), converging to ≈ +1000 by
-> ~episode 130 and holding positive; the wide CI band is the seed-271 spread.
+> *Raw per-episode across-seed mean (light) with a rolling-10 mean (bold).
+> Deeply negative early (collision-dominated); the rolling mean climbs through
+> zero around ~episode 130 and holds a positive across-seed level of ≈ +650–700
+> thereafter (the four locked-in seeds sit at ≈ +900–1050; seed-271 pulls the
+> mean down). Wide CI band reflects the seed-271 spread.
 > Regenerate: `uv run python scripts/render_learning_curve.py`.*
 
 **Critic loss** — critic MSE vs. gradient-update step:
 
-> ![Critic loss, mean ± 95% CI over 5 seeds](results/figures/critic_loss.png)
-> *Bounded throughout (~10² scale, no divergence) — the Polyak-averaged target
-> keeps it finite. Regenerate: `uv run python scripts/render_critic_loss.py`.*
+> ![Critic loss: per-episode mean ± 95% CI, 5 seeds](results/figures/critic_loss.png)
+> *Per-episode-mean critic MSE vs episode, mean ± 95 % CI over the seeds — it
+> stays in the **low tens** (≈ 12–26) and never diverges. (The raw per-step MSE
+> is noisier and spikes to ~10³–10⁴ on individual updates, but it too stays
+> finite.) τ = 0.005 keeps the target slow-moving; contrast τ = 1 / no target
+> net, which would blow up. Regenerate: `uv run python scripts/render_critic_loss.py`.*
 
 ### 3.3 The three analysis questions
 
@@ -150,6 +157,20 @@ update, exploration) lives in [`docs/THEORY.md`](docs/THEORY.md). The summary
 points at our own code lines for the Actor (`src/model/actor.py`), Critic
 (`src/model/critic.py`), Polyak soft-update and Gaussian noise (`src/ddpg/agent.py`,
 `src/ddpg/noise.py`).
+
+### 3.4 Sensitivity analysis + reproduction notebook (excellence)
+
+A controlled one-at-a-time sweep over the lidar resolution `env.n_rays`
+(8 / 16 / 24) at a reduced budget — `scripts/sweep_n_rays.py` →
+[`results/sweep_n_rays.json`](results/sweep_n_rays.json), figure
+`results/figures/sensitivity_n_rays.png` — confirms the default **16 rays** as
+the most data-efficient setting (full table + reading in
+[`docs/ANALYSIS.md`](docs/ANALYSIS.md) § *Sensitivity analysis*).
+
+> ![n_rays sensitivity sweep](results/figures/sensitivity_n_rays.png)
+
+Every table above is reproduced from the SDK alone (no parallel implementation)
+in [`notebooks/analysis.ipynb`](notebooks/analysis.ipynb).
 
 ---
 
@@ -218,7 +239,7 @@ training:
 
 maps:
   dataset_repo: "https://github.com/TeaganLi/HouseExpo"
-  dataset_sha: "PINNED_AT_FETCH"     # stamped by scripts/fetch_houseexpo.py
+  dataset_sha: "45e2b2505f6ea1fe49c0203f14efb7ce20b94e7c"   # pinned HouseExpo commit (stamped by scripts/fetch_houseexpo.py)
   train: ["room_single", "apt_small", "apt_multi"]
   holdout: ["apt_large", "office"]
 
@@ -288,6 +309,7 @@ soft-update is Polyak, SDK single-entry, config single-source.
 - [`docs/ANALYSIS.md`](docs/ANALYSIS.md) — the 3 required analysis questions
 - `docs/COST_ANALYSIS.md` · `docs/QUALITY.md` (ISO 25010) · `docs/UX.md` (CLI/figures) · `docs/PROMPTS.md`
 - `docs/adr/` — ADR-001 (no Gym/Gazebo) · ADR-002 (unicycle) · ADR-003 (Gaussian not OU) · ADR-004 (coverage grid) · ADR-005 (HouseExpo adapter) · ADR-006 (reward shaping) · ADR-007 (net sizing + τ) · ADR-008 (multi-seed + held-out generalization)
+- [`notebooks/analysis.ipynb`](notebooks/analysis.ipynb) — SDK-only reproduction of every results table (LaTeX + citations)
 
 ---
 
@@ -310,13 +332,13 @@ Standards: **TDD** (RED→GREEN→REFACTOR, test before/with code), **OOP** via 
 function/class/module, and **`uv` only** (no `pip` / `conda` / `venv` /
 `requirements.txt`). All algorithm-relevant values live in `config/config.yaml`.
 Work on the `main` branch lineage via a feature branch and open a PR for review;
-share read access with `@rmisegal`.
+share read access with the lecturer's GitHub handle `@rmisegal`.
 
 ---
 
 ## 8. References
 
-- Lillicrap et al. 2016 — *Continuous Control with Deep Reinforcement Learning* (DDPG)
+- Lillicrap et al., *Continuous Control with Deep Reinforcement Learning* (DDPG) — arXiv:1509.02971 (2015); ICLR 2016
 - Silver et al. 2014 — *Deterministic Policy Gradient Algorithms*
 - Li et al. 2019 — *HouseExpo: A Large-scale 2D Indoor Layout Dataset* (arXiv:1903.09845)
 
