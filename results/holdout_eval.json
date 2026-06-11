@@ -1,0 +1,12 @@
+{
+  "apt_large": {
+    "coverage": 0.0031750613364121805,
+    "steps": 1000,
+    "collisions": 0
+  },
+  "office": {
+    "coverage": 0.002754131196795193,
+    "steps": 1000,
+    "collisions": 0
+  }
+}

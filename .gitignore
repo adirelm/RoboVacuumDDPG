@@ -45,6 +45,9 @@ vendor/
 # Training artifacts (regenerable) — keep lightweight metrics/figures, ignore heavy checkpoints
 results/checkpoints/
 results/**/*.pt
+# Per-seed raw episode histories are ~12 MB each — git-ignored; the committed
+# metrics record is results/metrics_summary.json + the three figures.
+results/history/
 
 # Stray PDFs (allow only docs/assets/)
 *.pdf

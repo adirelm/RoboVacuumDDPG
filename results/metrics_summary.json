@@ -1,0 +1,61 @@
+{
+  "training_map": "room_single",
+  "episodes_per_seed": 500,
+  "seeds": [
+    42,
+    7,
+    123,
+    314,
+    271
+  ],
+  "per_seed": {
+    "42": {
+      "final20_reward": 900.7,
+      "final20_coverage": 0.3854,
+      "max_episode_reward": 1239.0,
+      "final20_critic_loss": 13.42
+    },
+    "7": {
+      "final20_reward": 918.6,
+      "final20_coverage": 0.4107,
+      "max_episode_reward": 1278.0,
+      "final20_critic_loss": 12.16
+    },
+    "123": {
+      "final20_reward": 760.9,
+      "final20_coverage": 0.4215,
+      "max_episode_reward": 1280.0,
+      "final20_critic_loss": 25.73
+    },
+    "314": {
+      "final20_reward": 1051.6,
+      "final20_coverage": 0.4662,
+      "max_episode_reward": 1328.0,
+      "final20_critic_loss": 14.82
+    },
+    "271": {
+      "final20_reward": -175.5,
+      "final20_coverage": 0.2694,
+      "max_episode_reward": 1273.0,
+      "final20_critic_loss": 12.16
+    }
+  },
+  "across_seed": {
+    "mean_reward": 691.3,
+    "pstdev_reward": 443.1,
+    "mean_coverage": 0.3906,
+    "convergence_episode_approx": 130
+  },
+  "holdout": {
+    "apt_large": {
+      "coverage": 0.0032,
+      "steps": 1000,
+      "collisions": 0
+    },
+    "office": {
+      "coverage": 0.0028,
+      "steps": 1000,
+      "collisions": 0
+    }
+  }
+}
