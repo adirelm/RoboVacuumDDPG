@@ -50,12 +50,25 @@ training:
   # evaluation runs via RoboVacuumSDK.evaluate, so no `eval_every` cadence knob.
   seeds: [42, 7, 123, 314, 271]
 
-# ---- HouseExpo maps (full ~35k git-ignored; curated subset vendored) ----
+# ---- HouseExpo maps (real dataset; full ~35k git-ignored; curated subset vendored) ----
 maps:
   dataset_repo: "https://github.com/TeaganLi/HouseExpo"
-  dataset_sha: "PINNED_AT_FETCH"     # stamped by scripts/fetch_houseexpo.py
+  # Pinned to the real HouseExpo HEAD as of fetch; stamped by scripts/fetch_houseexpo.py.
+  dataset_sha: "45e2b2505f6ea1fe49c0203f14efb7ce20b94e7c"
+  # HouseExpo verts/bbox are already in METRES; 1.0 keeps them metric (PRD-HOUSEEXPO §5).
+  coord_scale: 1.0
+  # Path of the gzipped-tar of all JSON maps inside the upstream repo (no 7z needed).
+  archive_path: "HouseExpo/json.tar.gz"
   train: ["room_single", "apt_small", "apt_multi"]
   holdout: ["apt_large", "office"]
+  # Logical curated name -> real HouseExpo map id (the file is <id>.json in the dataset).
+  # Spans single-room -> multi-room by room_num; fetch_houseexpo.py copies these into data/maps/.
+  curated_ids:
+    room_single: "011bef0381ddca9381a7aeb1d0b0777d"   # room_num=1
+    apt_small: "000514ade3bcc292a613a4c2755a5050"      # room_num=3
+    apt_multi: "0016652bf7b3ec278d54e0ef94476eb8"      # room_num=5
+    apt_large: "0099c392987b98355e984f7d06837dbc"      # room_num=6
+    office: "041bd68db15bac8be2d96ca062c23d2f"         # room_num=8
 
 paths:
   maps_dir: "data/maps"

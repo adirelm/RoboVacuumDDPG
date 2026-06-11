@@ -1,11 +1,34 @@
-"""HouseExpo JSON floor-plan -> wall segments + free-space bounds (PRD-HOUSEEXPO §5)."""
+"""Real HouseExpo JSON floor-plan -> wall segments + free-space (PRD-HOUSEEXPO §5).
+
+Parses the *real* HouseExpo schema (``verts`` exterior boundary polygon, ``bbox``
+{min,max}, ``room_category`` per-room boxes, ``room_num``, ``id``). The exterior
+``verts`` contour is real, non-convex geometry; it is closed into a ring and used
+both as the wall set and as the polygon for a proper point-in-polygon ``is_inside``
+(not just the bounding box). HouseExpo's ``room_category`` boxes are overlapping
+semantic region annotations, NOT clean interior walls/doors, so they are NOT
+fabricated into wall segments — see PRD-HOUSEEXPO §5.2 / ADR-005.
+"""
 
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
-Segment = tuple[float, float, float, float]  # (x1, y1, x2, y2)
+from src.env._house_map_geom import (
+    Segment,
+    Vert,
+    bounds_of,
+    closed_ring,
+    point_in_polygon,
+    verts_metric,
+    walls_from_ring,
+)
+from src.utils.config_loader import load_config
+
+__all__ = ["HouseMap", "Segment", "load_house_map"]
+
+_DEFAULT_SCALE = 1.0  # real HouseExpo verts are already metric; see PRD §5 unit note.
+_MIN_RING_LEN = 4  # >=3 distinct verts + the closing repeat -> a usable polygon.
 
 
 @dataclass
@@ -14,38 +37,35 @@ class HouseMap:
 
     walls: list[Segment]
     bounds: tuple[float, float, float, float]  # (xmin, ymin, xmax, ymax)
+    boundary: list[Vert] = field(default_factory=list)  # closed exterior ring (for is_inside)
 
     def is_inside(self, x: float, y: float) -> bool:
-        """True iff (x, y) lies within the axis-aligned free-space bounds."""
+        """True iff (x, y) lies within the exterior boundary polygon (point-in-polygon).
+
+        Falls back to the axis-aligned bounds only when no boundary ring is
+        available (e.g. a degenerate plan with <3 vertices).
+        """
+        if len(self.boundary) >= _MIN_RING_LEN:
+            return point_in_polygon(x, y, self.boundary)
         xmin, ymin, xmax, ymax = self.bounds
         return (xmin <= x <= xmax) and (ymin <= y <= ymax)
 
 
-def _verts(plan: dict) -> list[tuple[float, float]]:
-    raw = plan.get("verts") or plan.get("vertices") or []
-    return [(float(p[0]), float(p[1])) for p in raw]
-
-
-def _bounds(plan: dict, verts: list[tuple[float, float]]) -> tuple[float, float, float, float]:
-    bbox = plan.get("bbox")
-    if bbox and "min" in bbox and "max" in bbox:
-        lo, hi = bbox["min"], bbox["max"]
-        return (float(lo[0]), float(lo[1]), float(hi[0]), float(hi[1]))
-    xs = [v[0] for v in verts]
-    ys = [v[1] for v in verts]
-    return (min(xs), min(ys), max(xs), max(ys))
+def _coord_scale() -> float:
+    """Metric scale for HouseExpo coords from config (maps.coord_scale), default 1.0."""
+    try:
+        return float(load_config()["maps"].get("coord_scale", _DEFAULT_SCALE))
+    except (KeyError, FileNotFoundError, ValueError):
+        return _DEFAULT_SCALE
 
 
 def load_house_map(path: str) -> HouseMap:
-    """Parse one HouseExpo JSON plan into a deterministic HouseMap (PRD-HOUSEEXPO §5.1)."""
+    """Parse one real HouseExpo JSON plan into a deterministic HouseMap (PRD §5.1)."""
     with open(path, encoding="utf-8") as fh:
         plan = json.load(fh)
-    verts = _verts(plan)
-    walls: list[Segment] = []
-    for i in range(len(verts) - 1):
-        x1, y1 = verts[i]
-        x2, y2 = verts[i + 1]
-        if (x1, y1) != (x2, y2):
-            walls.append((x1, y1, x2, y2))
-    walls.sort()  # stable order -> deterministic parse (§5.1)
-    return HouseMap(walls=walls, bounds=_bounds(plan, verts))
+    scale = _coord_scale()
+    verts = verts_metric(plan, scale)
+    ring = closed_ring(verts)
+    walls = walls_from_ring(ring)
+    bounds = bounds_of(plan, verts, scale)
+    return HouseMap(walls=walls, bounds=bounds, boundary=ring)
