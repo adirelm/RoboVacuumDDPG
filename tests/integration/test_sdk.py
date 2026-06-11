@@ -59,3 +59,15 @@ def test_trajectory_loads_checkpoint_and_returns_path(tmp_path):
     path = sdk.trajectory("room_single", checkpoint_path=str(ckpt), seed=2)
     assert isinstance(path, list) and len(path) >= 1
     assert all(len(p) == 2 for p in path)
+
+
+def test_coverage_grid_returns_renderable_dict():
+    sdk = RoboVacuumSDK()
+    grid = sdk.coverage_grid("room_single", seed=42, max_steps=5)
+    assert set(grid) >= {"cleaned", "free", "extent", "walls", "coverage"}
+    assert len(grid["extent"]) == 4
+    # cleaned/free are nx-by-ny boolean grids of identical shape.
+    assert len(grid["cleaned"]) == len(grid["free"]) >= 1
+    assert len(grid["cleaned"][0]) == len(grid["free"][0]) >= 1
+    assert 0.0 <= grid["coverage"] <= 1.0
+    assert all(len(seg) == 4 for seg in grid["walls"])

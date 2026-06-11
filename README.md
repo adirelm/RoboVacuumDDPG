@@ -118,6 +118,14 @@ smooth continuous coverage. Trained **seed-42** policy on `room_single`
 > *A smooth, wall-avoiding sweep filling most of the room — the qualitative
 > picture behind the ~39 % coverage. Regenerate: `uv run python scripts/render_trajectory.py`.*
 
+The same rollout as a **coverage map** (the brief's "cleaning-coverage map in the
+maze") — cleaned cells in dark green over the floor plan, white = walls/exterior:
+
+> ![Coverage map of the trained seed-42 policy over room_single](results/figures/coverage_heatmap.png)
+> *Cleaned-cell grid over the L-shaped `room_single` boundary; the wall-following
+> sweep covers the perimeter and diagonals, leaving interior pockets (the ~39–46 %
+> per-episode coverage). Regenerate: `uv run python scripts/render_coverage_heatmap.py`.*
+
 ### 3.2 Metric graphs (the two required figures)
 
 **Learning curve** — cumulative reward vs. episode, mean ± 95 % CI over the

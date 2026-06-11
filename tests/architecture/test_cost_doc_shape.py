@@ -1,7 +1,7 @@
-"""Doc contract (spec §2/§11, TODO T04-03): COST_ANALYSIS.md has the tiktoken
-headline, chars/bytes appendix, training-runtime + compute envelope, and a
-named architect-decided spend cap. Training is complete, so the runtime
-envelope is filled in (no PENDING placeholders left).
+"""Doc contract (spec §2/§11, TODO T04-03): COST_ANALYSIS.md has the
+artifact-corpus-size headline, chars/bytes appendix, training-runtime + compute
+envelope, and a named architect-decided spend cap. Training is complete, so the
+runtime envelope is filled in (no PENDING placeholders left).
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ _DOC = Path(__file__).resolve().parent.parent.parent / "docs" / "COST_ANALYSIS.m
 def test_cost_doc_sections_present() -> None:
     text = _DOC.read_text(encoding="utf-8")
     for header in (
-        "## 1. Headline — tiktoken (cl100k_base)",
+        "## 1. Headline — artifact corpus size (concrete)",
         "## 2. Appendix — chars & bytes",
         "## 3. AI-tooling cost",
         "## 4. Training runtime & compute envelope",

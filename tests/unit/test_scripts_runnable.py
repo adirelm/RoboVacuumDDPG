@@ -18,7 +18,15 @@ _REPO = Path(__file__).resolve().parents[2]
 
 
 @pytest.mark.parametrize(
-    "script", ["train", "evaluate", "render_trajectory", "sweep_n_rays", "render_sensitivity"]
+    "script",
+    [
+        "train",
+        "evaluate",
+        "render_trajectory",
+        "render_coverage_heatmap",
+        "sweep_n_rays",
+        "render_sensitivity",
+    ],
 )
 def test_script_imports_resolve_when_run_directly(script: str) -> None:
     code = f"import runpy; runpy.run_path('scripts/{script}.py', run_name='smoke')"

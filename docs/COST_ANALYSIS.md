@@ -1,35 +1,43 @@
 # COST_ANALYSIS — RoboVacuumDDPG (spec §11)
 
-> Token counts are produced by `src/cost/meter.py` (tiktoken `cl100k_base`
-> headline + chars/bytes appendix). **There is no paid API in this project** —
-> all training and evaluation run locally on CPU, so the only "spend" is
-> wall-clock compute (§4) plus the AI-tooling session envelope (§3/§5), which we
-> keep qualitative rather than invent a dollar figure (spec §10 honesty stance).
-> The architect owns the spend cap (CLAUDE.md §1.4 cost-budget row).
+> This project bills **no paid inference API**: the shipped artifact calls no
+> model, so the only real "spend" is local CPU wall-clock (§4) plus the
+> qualitative AI-tooling session envelope (§3/§5). `src/cost/meter.py` is a
+> dependency-free **`RuntimeMeter`** (wall-clock timer + step/episode counters)
+> the training loop polls to keep the runtime cost honest — it is *not* a token
+> counter, and we do not invent a dollar figure (spec §10 honesty stance). The
+> architect↔implementer prompt volume is not separately token-metered (no paid
+> API to bill); instead we report the concrete **artifact corpus size** (§1/§2)
+> and the **CPU runtime** (§4). The architect owns the spend cap (CLAUDE.md §1.4).
 
-## 1. Headline — tiktoken (cl100k_base)
+## 1. Headline — artifact corpus size (concrete)
 
-Total prompt/response tokens across the build, counted by
-`src/cost/meter.py` with the `cl100k_base` encoder.
+The measurable "input volume" of the committed artifact, counted
+encoder-independently from `git ls-files`. The `~tokens` column is a transparent
+`chars / 4` estimate — no tiktoken dependency is shipped, so we do **not** claim a
+specific BPE token count.
 
-| Channel | Tokens (tiktoken cl100k_base) |
-|---|---|
-| Architect → implementer prompts | not separately metered |
-| Implementer responses | not separately metered |
-| **Total** | counted on demand by `src/cost/meter.py` over the prompt corpus |
+| Corpus | Files | Lines | Chars | ~Tokens (chars/4) |
+|---|---:|---:|---:|---:|
+| `src/` + `scripts/` (.py) | 37 | 1,718 | 60,974 | ~15.2k |
+| `tests/` (.py) | 48 | 2,260 | 77,623 | ~19.4k |
+| `docs/` (.md) + README | 24 | 8,989 | 424,820 | ~106.2k |
+| **Total artifact** | **109** | **12,967** | **563,417** | **~140.9k** |
 
-Token accounting is a *tooling* concern, not a runtime cost: no model is called
-during training or evaluation. The meter exists for reproducibility; the headline
-spend that matters for this assignment is the CPU wall-clock in §4.
+No model is called during training or evaluation, so there is no per-call token
+bill; the spend that matters for this assignment is the CPU wall-clock in §4.
 
 ## 2. Appendix — chars & bytes
 
-Encoder-independent fallback (same corpus as §1), reported for reproducibility.
+Encoder-independent byte sizes of the same corpus (chars are in §1), for
+reproducibility.
 
-| Measure | Value |
-|---|---|
-| Characters | counted on demand by `src/cost/meter.py` (encoder-independent) |
-| Bytes (UTF-8) | counted on demand by `src/cost/meter.py` |
+| Corpus | Chars | Bytes (UTF-8) |
+|---|---:|---:|
+| `src/` + `scripts/` (.py) | 60,974 | 61,030 |
+| `tests/` (.py) | 77,623 | 77,704 |
+| `docs/` (.md) + README | 424,820 | 429,947 |
+| **Total** | **563,417** | **568,681** |
 
 ## 3. AI-tooling cost
 

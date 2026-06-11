@@ -82,6 +82,37 @@ class RoboVacuumSDK:
             agent.load(checkpoint_path)
         return self.coverage_report(agent, env)
 
+    def coverage_grid(
+        self,
+        map_name: str,
+        checkpoint_path: str | None = None,
+        seed: int | None = None,
+        max_steps: int | None = None,
+    ) -> dict:
+        # Greedy rollout, then return the cumulative cleaned-cell grid + extent +
+        # walls so render_coverage_heatmap.py can draw the "coverage map" (Q2)
+        # through the single SDK entry point (scripts never import src.env).
+        env = self.build_env(map_name, seed=seed)
+        agent = DDPGAgent(env.state_dim, env.action_dim, self.cfg, seed=seed)
+        if checkpoint_path is not None:
+            agent.load(checkpoint_path)
+        limit = max_steps if max_steps is not None else self.cfg["env"]["max_steps"]
+        state = env.reset()
+        for _ in range(limit):
+            state, _reward, done, _info = env.step(agent.act(state, explore=False))
+            if done:
+                break
+        cov = env.coverage
+        xmax = cov.xmin + cov.nx * cov.cell_size
+        ymax = cov.ymin + cov.ny * cov.cell_size
+        return {
+            "cleaned": cov.cleaned.tolist(),
+            "free": cov.free.tolist(),
+            "extent": [cov.xmin, xmax, cov.ymin, ymax],
+            "walls": [tuple(w) for w in env.house_map.walls],
+            "coverage": float(cov.fraction()),
+        }
+
     def trajectory(
         self, map_name: str, checkpoint_path: str | None = None, seed: int | None = None
     ) -> list[tuple[float, float]]:

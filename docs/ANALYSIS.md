@@ -113,13 +113,23 @@ from `σ_start = 0.2` to `σ_end = 0.05` over 50k steps
 **deterministic** — `act(state, explore=False)` returns exactly `μ(s)` with no
 spread.
 
+The coverage map the trained (noise-on) policy actually produces is below — the
+exploration noise is what bought this sweep:
+
+![Coverage map](../results/figures/coverage_heatmap.png)
+*Cleaned cells (dark green) of the trained seed-42 policy over the L-shaped
+`room_single` plan (white = walls/exterior). The perimeter-and-diagonal sweep
+covers ~39–46% of free space per episode; the interior pockets are what a
+multi-map / longer-trained policy would still need to fill.*
+
 If that noise were removed at the start (or σ decayed to ~0 immediately), the
 deterministic actor would commit to one heading from its earliest, untrained
 weights and stop sampling alternative throttle/steer pairs. With no lateral
 exploration the **coverage map collapses to a narrow path** — the robot retraces
-a single corridor — and there is no positive-reward `Δcells` signal for the
-critic to bootstrap from, so the learning curve would **stay stuck in the
-negative, collision-dominated regime** instead of climbing.
+a single corridor instead of the space-filling sweep above — and there is no
+positive-reward `Δcells` signal for the critic to bootstrap from, so the learning
+curve would **stay stuck in the negative, collision-dominated regime** instead of
+climbing.
 
 This is exactly the behaviour we observed and then fixed during the build: an
 earlier run with σ decayed too aggressively left the curve pinned negative; only
