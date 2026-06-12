@@ -30,6 +30,15 @@ def test_prompts_doc_shas_resolve_in_history() -> None:
     """Every backticked short SHA in PROMPTS.md must exist in this repo's history."""
     if not (_REPO / ".git").exists():
         pytest.skip("not a git checkout (e.g. source archive)")
+    shallow = subprocess.run(
+        ["git", "rev-parse", "--is-shallow-repository"],
+        cwd=_REPO,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if shallow.stdout.strip() == "true":
+        pytest.skip("shallow clone — historical SHAs unavailable (CI uses fetch-depth: 0)")
     shas = re.findall(r"`([0-9a-f]{7,40})`", _DOC.read_text(encoding="utf-8"))
     assert len(shas) >= 20, "PROMPTS.md should cite the per-phase commit SHAs"
     for sha in shas:

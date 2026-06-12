@@ -11,6 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history so the PROMPTS.md SHA-provenance test can resolve
+          # the per-phase commit hashes (a shallow clone would skip it).
+          fetch-depth: 0
       - name: Install uv
         uses: astral-sh/setup-uv@v3
         with:
