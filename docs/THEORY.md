@@ -29,7 +29,7 @@ Deterministic Policy Gradient theorem (Silver et al. 2014).
 `env.n_rays`) normalized by $d_{\max}=5.0$ m (`env.ray_max`), the current
 linear/angular speed $(v,\omega)$, and the **two-component** $(\cos\beta,
 \sin\beta)$ unit-vector bearing $\beta$ toward the nearest uncleaned cell. With
-$n=16$ this is $16 + 2 + 2 = \mathbf{20}$ dimensions (`state_dim = n\_rays + 4`).
+$n=16$ this is $16 + 2 + 2 = \mathbf{20}$ dimensions (`state_dim = n_rays + 4`).
 
 **Action → kinematics** (spec §3, unicycle model): $v = \text{throttle}\cdot
 V_{\max}$, $\omega = \text{steer}\cdot \Omega_{\max}$ with $V_{\max}=0.5$
@@ -160,8 +160,9 @@ DDPG practice, since the actor should chase a critic that has already settled.
 (`config.ddpg.lr_critic`), batch $128$ (`ddpg.batch_size`), buffer $10^6$
 (`ddpg.buffer_size`), grad-clip $1.0$ (`ddpg.grad_clip`).
 
-This curve is the deliverable `results/figures/critic_loss.png` (spec §7),
-critic loss vs training step, rendered by `render_critic_loss.py`.
+This curve is the deliverable `results/figures/critic_loss.png` (spec §7) —
+the per-episode-mean critic loss vs episode (convergence time), rendered by
+`render_critic_loss.py` from the step-level `critic_losses` history.
 
 Implementation: critic MSE in `src/ddpg/agent.py` `update()`; uniform sampling
 in `src/ddpg/replay_buffer.py`.
@@ -274,7 +275,8 @@ One call to `DDPGAgent.update()` chains §3 → §4 → §5:
 The collection ↔ store ↔ update ↔ log outer loop lives in
 `src/services/trainer.py`; the SDK (`src/sdk/sdk.py` `RoboVacuumSDK`) is the
 single entry point (`build_env`, `train`, `evaluate`, `rollout`,
-`coverage_report`). The episode-return trace is the deliverable
+`coverage_report`, `trajectory`, `map_walls`, `coverage_grid`). The
+episode-return trace is the deliverable
 `results/figures/learning_curve.png` (spec §7, mean±CI over
 `training.seeds = [42, 7, 123, 314, 271]`).
 

@@ -46,11 +46,16 @@ class CoverageGrid:
         self.n_free = max(1, int(self.free.sum()))
 
     def mark(self, x: float, y: float) -> int:
-        """Mark cells whose centre is within clean_radius; return NEWLY cleaned count."""
+        """Mark FREE cells whose centre is within clean_radius; return NEWLY cleaned count.
+
+        The free mask keeps the reward (k_coverage * new_cells) from ever paying
+        for wall/exterior cells. With clean_radius <= robot_radius the collision
+        check already makes such cells unreachable, so this is pure hardening.
+        """
         dx = self.cx[:, None] - x
         dy = self.cy[None, :] - y
         within = (dx * dx + dy * dy) <= (self.clean_radius * self.clean_radius)
-        newly = within & ~self.cleaned
+        newly = within & ~self.cleaned & self.free
         count = int(newly.sum())
         self.cleaned |= newly
         return count

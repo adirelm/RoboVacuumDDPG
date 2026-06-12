@@ -6,7 +6,7 @@ The project-wide requirements document for Assignment 5 of the Bar-Ilan
 source of truth every doc must agree with verbatim is the design spec
 `docs/superpowers/specs/2026-06-10-robovacuum-ddpg-design.md`. Per-component
 design lives in `PLAN.md` (C4 + UML + ADRs); the literal prompts and AI
-workflow live in `docs/PROMPTS.md`; the phased task list with
+workflow live in `docs/shared/PROMPTS.md`; the phased task list with
 definition-of-done lives in `TODO.md`; the DDPG math lives in
 `docs/THEORY.md`; the three analysis answers live in `docs/ANALYSIS.md`;
 the per-domain requirements split across
@@ -223,7 +223,9 @@ across the config `training.seeds = [42, 7, 123, 314, 271]`.
 ## 3. Functional requirements
 
 Each `F#` names the spec §-id it satisfies inline. The full
-brief-§ → F# → test mapping lives in `docs/TRACE.md`.
+brief-§ → F# → test mapping is folded into the §5.1 table's evidence
+column (a separate `TRACE.md` was planned and then merged here to avoid
+duplicating the same mapping in two files).
 
 ### 3.1 Simulator core (spec §3, §4)
 
@@ -439,8 +441,9 @@ Inherited from `CLAUDE.md` Hard Constraints, plus A5-specific additions.
 - The summary points at exact code lines for the Actor (`model/actor.py`),
   Critic (`model/critic.py`), Polyak soft-update (`ddpg/agent.py`), and
   Gaussian noise (`ddpg/noise.py`).
-- Every `F#` row in §5.1 has an evidence pointer; `docs/TRACE.md` covers
-  every brief §-id → at least one `F#` and at least one test.
+- Every `F#` row in §5.1 has an evidence pointer covering every brief
+  §-id → at least one `F#` and at least one test (the trace mapping lives
+  in that table; no separate TRACE.md).
 - CI is green on the merge commit; the no-Gymnasium AST test passes; the
   forbidden-PII / secret grep guard reports zero hits.
 
@@ -566,7 +569,7 @@ leaves an auditable artefact. Definition-of-done detail lives in `TODO.md`.
   answers + coverage numbers), `docs/THEORY.md`, `docs/COST_ANALYSIS.md`;
   optional sensor-resolution ablation via `n_rays`. DoD: figures exist
   (>1 KB), analysis numbers cite seed/episode/CI.
-- **Phase 5 — Submission.** `docs/TRACE.md` full coverage, README, tag
+- **Phase 5 — Submission.** §5.1 trace coverage, README, tag
   `1.0.0`, share repo read access with the lecturer's GitHub handle `@rmisegal`, fill the
   Moodle cover sheet `adrl-001-ex05.pdf` (numeric self-grade on the PDF
   only). DoD: clean-checkout green build; §5.2 project-level DoD met.
@@ -613,5 +616,6 @@ leaves an auditable artefact. Definition-of-done detail lives in `TODO.md`.
   convergence statement.
 - `docs/QUALITY.md` — ISO 25010 quality model.
 - `docs/UX.md` — CLI / figures (spec §10).
-- `docs/PROMPTS.md` — the literal prompts and AI-workflow narrative.
-- `docs/TRACE.md` — bidirectional brief §-id ↔ F# ↔ test mapping.
+- `docs/shared/PROMPTS.md` — the literal prompts and AI-workflow narrative.
+- §5.1 evidence column — bidirectional brief §-id ↔ F# ↔ test mapping
+  (folded in; no separate TRACE.md).

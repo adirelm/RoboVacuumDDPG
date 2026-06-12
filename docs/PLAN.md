@@ -52,7 +52,7 @@ C4Container
       Container(env,    "Environment (env/*)",                   "VacuumEnv custom Python API",  "reset() / step(action) → 4-tuple; raycast · kinematics · coverage · collision · reward · state assembly")
       Container(model,  "Models (model/*)",                      "torch.nn",                     "Actor (Tanh-bounded action) · Critic (state⊕action → Q)")
       Container(ddpg,   "DDPG core (ddpg/*)",                    "from-scratch PyTorch",         "DDPGAgent · ReplayBuffer (uniform) · Gaussian exploration noise · Polyak soft-update(τ)")
-      Container(cost,   "Cost meter (cost/meter.py)",            "tiktoken · runtime",           "token / runtime cost accounting (V3 §11 (Costs))")
+      Container(cost,   "Cost meter (cost/meter.py)",            "stdlib RuntimeMeter",          "wall-clock + step/episode cost accounting (V3 §11 (Costs))")
       Container(utils,  "Utils (utils/config_loader.py)",        "stdlib · yaml",                "single-source config loader for config/config.yaml")
       ContainerDb(store, "Local artifacts",                      "filesystem",                   "results/figures/* (learning_curve.png · critic_loss.png · trajectory) · checkpoints · coverage grids")
     }
@@ -105,7 +105,7 @@ matches the spec §4 tree **exactly**.
 | **ddpg / noise** | `ddpg/noise.py` | **Gaussian** exploration noise added to actor action during collection (`sigma_start=0.2` → `sigma_end=0.05` over `sigma_decay_steps=50000`) — **NOT OU** (spec §5, ADR-003) | No OU process; no network code; no replay access |
 | **ddpg / agent** | `ddpg/agent.py` | `DDPGAgent`: `act()` (actor + Gaussian noise), `update()` (critic TD + DPG actor step, `grad_clip=1.0`), **Polyak soft-update(τ)** `θ_target = τ·θ + (1−τ)·θ_target` for both actor & critic targets (`τ=0.005`, `γ=0.99`, `lr_actor=1e-4`, `lr_critic=1e-3`) | No env stepping; no direct user I/O; no figure rendering |
 | **services / trainer** | `services/trainer.py` | Custom training loop: **collect → store → update → log**; `warmup_steps=1000` random actions before learning; multi-seed (`seeds=[42,7,123,314,271]`), `episodes=500` (no in-loop eval cadence — full per-episode history returned, final eval via `RoboVacuumSDK.evaluate`) | No `gymnasium`; no SB3; no direct user I/O |
-| **cost** | `cost/meter.py` | tiktoken / runtime cost accounting (V3 §11 (Costs)) | No RL logic; no env stepping |
+| **cost** | `cost/meter.py` | `RuntimeMeter` — wall-clock + step/episode cost accounting (V3 §11 (Costs)) | No RL logic; no env stepping |
 | **utils** | `utils/config_loader.py` | Single-source loader for `config/config.yaml` (CLAUDE.md §4) | No business logic; no hardcoded algorithm values |
 
 DRY-shared helpers live in sibling `_*.py` modules (e.g. `env/_*.py`,
@@ -197,7 +197,7 @@ training:
 
 maps:                    # full ~35k git-ignored; curated subset vendored
   dataset_repo: "https://github.com/TeaganLi/HouseExpo"
-  dataset_sha: "PINNED_AT_FETCH"     # stamped by scripts/fetch_houseexpo.py
+  dataset_sha: "45e2b2505f6ea1fe49c0203f14efb7ce20b94e7c"   # pinned HouseExpo commit (stamped by scripts/fetch_houseexpo.py)
   train: ["room_single", "apt_small", "apt_multi"]
   holdout: ["apt_large", "office"]
 

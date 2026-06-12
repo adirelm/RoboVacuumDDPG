@@ -82,6 +82,8 @@ history = sdk.train(seed=42)                            # collect → store → 
 report = sdk.evaluate("results/checkpoints/seed_42.pt", "apt_large", seed=42)  # greedy held-out eval
 path = sdk.trajectory("room_single", checkpoint_path="results/checkpoints/seed_42.pt", seed=42)  # (x,y) path
 walls = sdk.map_walls("room_single")                   # wall segments for the trajectory figure
+grid = sdk.coverage_grid("room_single", checkpoint_path="results/checkpoints/seed_42.pt", seed=42)
+#   ^ cleaned/free grids + extent + walls for the coverage heatmap (render_coverage_heatmap.py)
 # lower-level: sdk.rollout(agent, env) and sdk.coverage_report(agent, env) take a built agent+env
 ```
 
@@ -139,7 +141,7 @@ seeds `[42, 7, 123, 314, 271]`:
 > mean down). Wide CI band reflects the seed-271 spread.
 > Regenerate: `uv run python scripts/render_learning_curve.py`.*
 
-**Critic loss** — critic MSE vs. gradient-update step:
+**Critic loss** — per-episode-mean critic MSE vs. episode:
 
 > ![Critic loss: per-episode mean ± 95% CI, 5 seeds](results/figures/critic_loss.png)
 > *Per-episode-mean critic MSE vs episode, mean ± 95 % CI over the seeds — it
@@ -279,7 +281,8 @@ modules before the cap is hit.
 ```
 src/
 ├── sdk/sdk.py            # RoboVacuumSDK — single business-logic entry
-│                         #   (build_env, train, evaluate, rollout, coverage_report)
+│                         #   (build_env, train, evaluate, rollout, coverage_report,
+│                         #    trajectory, map_walls, coverage_grid)
 ├── env/
 │   ├── house_map.py      # HouseExpo JSON → wall segments + free-space bounds
 │   ├── raycast.py        # ray–segment intersection → lidar distances
@@ -298,7 +301,7 @@ src/
 │   └── agent.py          # DDPGAgent: act(), Polyak soft-update(τ), update()
 ├── services/
 │   └── trainer.py        # custom training loop: collect → store → update → log
-├── cost/meter.py         # tiktoken/runtime cost accounting
+├── cost/meter.py         # RuntimeMeter — wall-clock + step/episode cost accounting
 └── utils/config_loader.py
 ```
 
@@ -315,7 +318,7 @@ soft-update is Polyak, SDK single-entry, config single-source.
 - `docs/PLAN.md` (C4 + UML + ADRs) · `docs/TODO.md` (phased + DoD)
 - [`docs/THEORY.md`](docs/THEORY.md) — DDPG objective, deterministic policy gradient, critic TD target, Polyak update
 - [`docs/ANALYSIS.md`](docs/ANALYSIS.md) — the 3 required analysis questions
-- `docs/COST_ANALYSIS.md` · `docs/QUALITY.md` (ISO 25010) · `docs/UX.md` (CLI/figures) · `docs/PROMPTS.md`
+- `docs/COST_ANALYSIS.md` · `docs/QUALITY.md` (ISO 25010) · `docs/UX.md` (CLI/figures) · `docs/shared/PROMPTS.md`
 - `docs/adr/` — ADR-001 (no Gym/Gazebo) · ADR-002 (unicycle) · ADR-003 (Gaussian not OU) · ADR-004 (coverage grid) · ADR-005 (HouseExpo adapter) · ADR-006 (reward shaping) · ADR-007 (net sizing + τ) · ADR-008 (multi-seed + held-out generalization)
 - [`notebooks/analysis.ipynb`](notebooks/analysis.ipynb) — SDK-only reproduction of every results table (LaTeX + citations)
 

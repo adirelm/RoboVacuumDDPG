@@ -15,14 +15,16 @@
 The measurable "input volume" of the committed artifact, counted
 encoder-independently from `git ls-files`. The `~tokens` column is a transparent
 `chars / 4` estimate — no tiktoken dependency is shipped, so we do **not** claim a
-specific BPE token count.
+specific BPE token count. Lines/chars/tokens are rounded to ≈3 significant
+figures, measured at the release tree (a release commit's own doc edits shift
+the totals by a fraction of a percent; we round rather than chase that tail).
 
 | Corpus | Files | Lines | Chars | ~Tokens (chars/4) |
 |---|---:|---:|---:|---:|
-| `src/` + `scripts/` (.py) | 37 | 1,718 | 60,974 | ~15.2k |
-| `tests/` (.py) | 48 | 2,260 | 77,623 | ~19.4k |
-| `docs/` (.md) + README | 24 | 8,989 | 424,820 | ~106.2k |
-| **Total artifact** | **109** | **12,967** | **563,417** | **~140.9k** |
+| `src/` + `scripts/` (.py) | 38 | ≈1,820 | ≈64.8k | ~16.2k |
+| `tests/` (.py) | 49 | ≈2,400 | ≈82.9k | ~20.7k |
+| `docs/` (.md) + README | 24 | ≈9,030 | ≈428k | ~107k |
+| **Total artifact** | **111** | **≈13.3k** | **≈575k** | **~144k** |
 
 No model is called during training or evaluation, so there is no per-call token
 bill; the spend that matters for this assignment is the CPU wall-clock in §4.
@@ -30,14 +32,14 @@ bill; the spend that matters for this assignment is the CPU wall-clock in §4.
 ## 2. Appendix — chars & bytes
 
 Encoder-independent byte sizes of the same corpus (chars are in §1), for
-reproducibility.
+reproducibility (same rounding/measurement note as §1).
 
 | Corpus | Chars | Bytes (UTF-8) |
 |---|---:|---:|
-| `src/` + `scripts/` (.py) | 60,974 | 61,030 |
-| `tests/` (.py) | 77,623 | 77,704 |
-| `docs/` (.md) + README | 424,820 | 429,947 |
-| **Total** | **563,417** | **568,681** |
+| `src/` + `scripts/` (.py) | ≈64.8k | ≈64.9k |
+| `tests/` (.py) | ≈82.9k | ≈83.0k |
+| `docs/` (.md) + README | ≈428k | ≈433k |
+| **Total** | **≈575k** | **≈581k** |
 
 ## 3. AI-tooling cost
 

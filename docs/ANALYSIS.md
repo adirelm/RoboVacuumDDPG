@@ -135,12 +135,13 @@ This is exactly the behaviour we observed and then fixed during the build: an
 earlier run with σ decayed too aggressively left the curve pinned negative; only
 after restoring the slower σ-decay schedule did the curve climb out of the
 early-negative band (the ≈ −2000…−10000 region visible in the first ~15 episodes
-of the learning curve) up to the sustained ≈ +1000 plateau. The noise is what
-buys the *coverage* that the deterministic actor then exploits.
+of the learning curve) up to the sustained positive band (≈ +650–700 across-seed;
+≈ +900–1050 on the four locked-in seeds). The noise is what buys the *coverage*
+that the deterministic actor then exploits.
 
 | Variant | Coverage outcome | ΔReward vs early window |
 |---|---|---|
-| Gaussian noise (default, σ 0.2→0.05) | ~0.39 across-seed (room_single) | climbs ≈ −2000 → ≈ +1000 tail (large positive ΔReward) |
+| Gaussian noise (default, σ 0.2→0.05) | ~0.39 across-seed (room_single) | climbs ≈ −2000 → ≈ +650–700 across-seed tail (large positive ΔReward) |
 | Noise OFF from step 0 (ablation) | collapses to a narrow retraced path | stays in the negative band (≈ 0 / negative ΔReward) |
 
 The noise-ON column is measured from this run; the noise-OFF column is the
@@ -156,11 +157,12 @@ target networks** updated by Polyak averaging `θ_t ← τθ + (1−τ)θ_t`
 diverge.
 
 The evidence is the **critic-loss curve**, read as two views of the same signal.
-The **per-episode-mean** critic MSE stays in the **low tens** across all 5 seeds
-(final-20-episode means **12–26**; `results/metrics_summary.json`). The
-**per-step** MSE that the figure plots is noisier — individual gradient updates
-reach **~10³–10⁴** — and it rises mildly late in training as the returns (and
-hence the TD targets) grow in magnitude. The key point is that *neither* view
+The **per-episode-mean** critic MSE — what the figure below plots — stays in the
+**low tens** across all 5 seeds (final-20-episode means **12–26**;
+`results/metrics_summary.json`). The raw **per-step** MSE (not plotted; recorded
+in the step-level `critic_losses` history) is noisier — individual gradient
+updates reach **~10³–10⁴** — and it rises mildly late in training as the returns
+(and hence the TD targets) grow in magnitude. The key point is that *neither* view
 **diverges**: there is no runaway blow-up even as the reward climbs by three
 orders of magnitude. The slow-moving Polyak target (τ = 0.005) keeps the
 regression problem stationary enough to stay finite; with τ = 1 (hard copy every
@@ -176,7 +178,7 @@ Polyak-averaged target (τ = 0.005) is what keeps it bounded.*
 | Metric (final-20-episode window, 5 seeds) | Value |
 |---|---|
 | Across-seed mean coverage | ≈ 0.39 (39% of free cells / episode) |
-| ΔReward (tail − early window) | ≈ +1000 − (≈ −2000) ≈ +3000 (collision band → positive plateau) |
+| ΔReward (tail − early window) | ≈ +700 − (≈ −2000) ≈ +2700 across-seed (collision band → sustained positive band) |
 | Critic-loss tail (per-episode mean, range over seeds) | ≈ 12 – 26 (bounded, no divergence) |
 
 ## Sensitivity analysis — lidar resolution (`n_rays`)

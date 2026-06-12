@@ -76,11 +76,18 @@ class RoboVacuumSDK:
     def evaluate(self, checkpoint_path: str | None, map_name: str, seed: int | None = None) -> dict:
         # Contract amendment: build env+agent, load trained weights when given,
         # then greedy report. checkpoint_path=None evaluates a fresh agent.
+        agent, env = self._agent_env(map_name, checkpoint_path, seed)
+        return self.coverage_report(agent, env)
+
+    def _agent_env(
+        self, map_name: str, checkpoint_path: str | None = None, seed: int | None = None
+    ) -> tuple[DDPGAgent, VacuumEnv]:
+        """Build env + agent for `map_name`, loading trained weights when given."""
         env = self.build_env(map_name, seed=seed)
         agent = DDPGAgent(env.state_dim, env.action_dim, self.cfg, seed=seed)
         if checkpoint_path is not None:
             agent.load(checkpoint_path)
-        return self.coverage_report(agent, env)
+        return agent, env
 
     def coverage_grid(
         self,
@@ -92,16 +99,8 @@ class RoboVacuumSDK:
         # Greedy rollout, then return the cumulative cleaned-cell grid + extent +
         # walls so render_coverage_heatmap.py can draw the "coverage map" (Q2)
         # through the single SDK entry point (scripts never import src.env).
-        env = self.build_env(map_name, seed=seed)
-        agent = DDPGAgent(env.state_dim, env.action_dim, self.cfg, seed=seed)
-        if checkpoint_path is not None:
-            agent.load(checkpoint_path)
-        limit = max_steps if max_steps is not None else self.cfg["env"]["max_steps"]
-        state = env.reset()
-        for _ in range(limit):
-            state, _reward, done, _info = env.step(agent.act(state, explore=False))
-            if done:
-                break
+        agent, env = self._agent_env(map_name, checkpoint_path, seed)
+        self.rollout(agent, env, max_steps=max_steps)
         cov = env.coverage
         xmax = cov.xmin + cov.nx * cov.cell_size
         ymax = cov.ymin + cov.ny * cov.cell_size
@@ -118,8 +117,5 @@ class RoboVacuumSDK:
     ) -> list[tuple[float, float]]:
         # Greedy (x, y) path for the trajectory figure; loads trained weights when
         # given (F6/F30) so the figure is the trained policy, not a fresh agent.
-        env = self.build_env(map_name, seed=seed)
-        agent = DDPGAgent(env.state_dim, env.action_dim, self.cfg, seed=seed)
-        if checkpoint_path is not None:
-            agent.load(checkpoint_path)
+        agent, env = self._agent_env(map_name, checkpoint_path, seed)
         return self.rollout(agent, env)

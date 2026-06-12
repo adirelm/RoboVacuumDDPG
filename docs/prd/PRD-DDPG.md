@@ -205,15 +205,16 @@ No SB3. The agent is assembled from four focused ≤150-LOC modules (spec §4):
 - `src/ddpg/replay_buffer.py` — uniform experience replay, capacity 1e6 (F5.6),
   returns batched `(s, a, r, s′, d)` tensors.
 - `src/ddpg/noise.py` — Gaussian σ-schedule (F5.10–F5.13); brief-mandated.
-- `src/ddpg/agent.py` — `DDPGAgent`: `act(state, explore)` (adds noise during
-  collection), `update(batch)` (critic TD + deterministic policy gradient +
-  grad-clip), `soft_update(τ)` Polyak averaging; holds online + target copies
-  of actor and critic.
+- `src/ddpg/agent.py` — `DDPGAgent`: `act(state, explore=True)` (adds noise
+  during collection), `update()` (samples a batch internally; critic TD +
+  deterministic policy gradient + grad-clip), `soft_update()` (parameterless
+  Polyak averaging, τ from config); holds online + target copies of actor
+  and critic.
 - `src/services/trainer.py` — custom training loop: collect → store → (after
   `warmup_steps`) sample → `update` → `soft_update` → log. **No Gym loop.**
 
 All reachable only through `RoboVacuumSDK` (`src/sdk/sdk.py`):
-`build_env / train / evaluate / rollout / coverage_report`.
+`build_env / train / evaluate / rollout / coverage_report / trajectory / map_walls / coverage_grid`.
 
 ## 7. References
 

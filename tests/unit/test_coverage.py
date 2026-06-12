@@ -65,6 +65,20 @@ def test_fraction_default_is_whole_bbox_backward_compatible():
     assert grid.fraction() == 1.0
 
 
+def test_mark_never_rewards_nonfree_cells():
+    # Robot disc straddles the free/void boundary at x=2: only the FREE-side
+    # cells may count as newly cleaned (reward = k_coverage * mark() count).
+    def is_free(x: float, y: float) -> bool:
+        return x < 2.0
+
+    masked = CoverageGrid(BOUNDS, CELL, CLEAN_R, is_free=is_free)
+    unmasked = CoverageGrid(BOUNDS, CELL, CLEAN_R)
+    n_masked = masked.mark(2.0, 2.0)
+    n_unmasked = unmasked.mark(2.0, 2.0)
+    assert 0 < n_masked < n_unmasked  # void-side cells were excluded
+    assert not (masked.cleaned & ~masked.free).any()
+
+
 def test_bearing_ignores_unreachable_nonfree_cells():
     # left half free (x < 2), right half wall/void. Clean ALL reachable free
     # cells; the bearing must report "done" (0,0) rather than point at the

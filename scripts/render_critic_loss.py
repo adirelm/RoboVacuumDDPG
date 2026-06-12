@@ -1,9 +1,10 @@
-"""Render results/figures/critic_loss.png: critic MSE loss vs gradient-update
-step (mean +/- 95% CI over the training seeds).
+"""Render results/figures/critic_loss.png: PER-EPISODE-mean critic MSE vs
+episode (mean +/- 95% CI over the training seeds) — the bounded "critic loss
+vs convergence time" view (final-20 tail ~12-26; spec section 7).
 
-Plots the STEP-level critic_losses list (contract F29, spec section 7) that
-Trainer.train records per gradient update, flattened across episodes. Falls
-back to the per-episode mean critic_loss when older histories lack the list.
+step_series() is retained as the auxiliary per-step view of the same signal
+(the raw critic_losses list Trainer.train records per gradient update,
+contract F29) — noisier, reaching ~10^3-10^4 on individual updates.
 
 uv run python scripts/render_critic_loss.py
 """

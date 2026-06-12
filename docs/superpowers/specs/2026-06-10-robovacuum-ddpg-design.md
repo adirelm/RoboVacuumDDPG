@@ -72,7 +72,7 @@ src/
 │   └── agent.py          # DDPGAgent: act(), Polyak soft-update(τ), update()
 ├── services/
 │   └── trainer.py        # custom training loop: collect → store → update → log
-├── cost/meter.py         # tiktoken/runtime cost accounting (§11)
+├── cost/meter.py         # RuntimeMeter — wall-clock/step cost accounting (§11)
 └── utils/config_loader.py
 ```
 If `vacuum_env.py` or `agent.py` approach 150 LOC, split helpers into a sibling

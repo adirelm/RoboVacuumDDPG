@@ -23,11 +23,19 @@ import matplotlib.pyplot as plt  # noqa: E402
 OUT_PNG = "results/figures/coverage_heatmap.png"
 
 
-def render(grid: dict, out_png: str = OUT_PNG) -> str:
+def heat_array(grid: dict) -> np.ndarray:
+    """[ix, iy] heat values: cleaned-free = 1, free-uncleaned = 0, wall/void = NaN.
+
+    Indexed like CoverageGrid (x along axis 0, y along axis 1); render() shows it
+    as imshow(heat.T, origin="lower", extent=...) so x runs right and y runs up.
+    """
     cleaned = np.asarray(grid["cleaned"], dtype=float)
     free = np.asarray(grid["free"], dtype=float)
-    # cleaned-free = 1 (dark), free-uncleaned = 0 (light), wall/void = NaN (white).
-    heat = np.where(free > 0, np.where(cleaned > 0, 1.0, 0.0), np.nan)
+    return np.where(free > 0, np.where(cleaned > 0, 1.0, 0.0), np.nan)
+
+
+def render(grid: dict, out_png: str = OUT_PNG) -> str:
+    heat = heat_array(grid)
     cmap = plt.cm.YlGn.copy()
     cmap.set_bad("white")
     Path(out_png).parent.mkdir(parents=True, exist_ok=True)

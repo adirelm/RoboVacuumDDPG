@@ -1,6 +1,20 @@
 import json
 
+import numpy as np
+
 from scripts import render_learning_curve as rlc
+
+
+def test_rolling_mean_hand_computed():
+    # trailing window w=2 over [1,2,3,4]: expanding head [1.0, 1.5], then
+    # (2+3)/2=2.5, (3+4)/2=3.5 — locks the cumsum offsets (off-by-one guard).
+    out = rlc.rolling(np.array([1.0, 2.0, 3.0, 4.0]), 2)
+    assert list(out) == [1.0, 1.5, 2.5, 3.5]
+
+
+def test_rolling_shorter_than_window_is_expanding_mean():
+    out = rlc.rolling(np.array([5.0, 7.0]), 10)
+    assert list(out) == [5.0, 6.0]
 
 
 def _write_synthetic(history_dir, seeds):

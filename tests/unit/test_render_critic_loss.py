@@ -1,6 +1,26 @@
 import json
+import math
 
 from scripts import render_critic_loss as rcl
+
+
+def test_episode_series_truncates_to_shortest_seed_with_hand_computed_mean(tmp_path):
+    # Seed A: 4 episodes of critic_loss [10, 20, 30, 40]; seed B: 2 episodes
+    # [30, 40]. episode_series must truncate to the shortest run (2 episodes)
+    # and average per episode: [(10+30)/2, (20+40)/2] = [20, 30].
+    history_dir = tmp_path / "history"
+    history_dir.mkdir(parents=True)
+    for seed, losses in ((1, [10.0, 20.0, 30.0, 40.0]), (2, [30.0, 40.0])):
+        records = [
+            {"episode": e, "reward": 1.0, "critic_loss": v, "coverage": 0.5, "steps": 10}
+            for e, v in enumerate(losses)
+        ]
+        (history_dir / f"seed_{seed}.json").write_text(json.dumps(records), encoding="utf-8")
+    episodes, mean, ci = rcl.episode_series(str(history_dir))
+    assert list(episodes) == [0, 1]
+    assert list(mean) == [20.0, 30.0]
+    # 95% CI with ddof=1 over {10,30}: std=14.142..., sem=10, ci=19.6
+    assert math.isclose(float(ci[0]), 19.6, rel_tol=1e-9)
 
 
 def _write_synthetic(history_dir, seeds):
