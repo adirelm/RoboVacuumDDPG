@@ -11,6 +11,8 @@ import torch
 
 
 class ReplayBuffer:
+    """Fixed-capacity uniform experience replay over pre-allocated float32 ring arrays."""
+
     def __init__(self, capacity: int, state_dim: int, action_dim: int, seed: int | None = None):
         self.capacity = capacity
         self.states = np.zeros((capacity, state_dim), dtype=np.float32)
@@ -23,6 +25,7 @@ class ReplayBuffer:
         self._size = 0
 
     def add(self, s: np.ndarray, a: np.ndarray, r: float, s2: np.ndarray, done: bool) -> None:
+        """Insert one transition, overwriting the oldest once capacity is reached."""
         i = self._idx
         self.states[i] = s
         self.actions[i] = a
@@ -33,6 +36,7 @@ class ReplayBuffer:
         self._size = min(self._size + 1, self.capacity)
 
     def sample(self, batch_size: int) -> tuple[torch.Tensor, ...]:
+        """Uniformly sample a batch as (s, a, r, s2, done) float32 tensors."""
         idx = self._rng.integers(0, self._size, size=batch_size)
         return (
             torch.as_tensor(self.states[idx], dtype=torch.float32),
@@ -43,4 +47,5 @@ class ReplayBuffer:
         )
 
     def __len__(self) -> int:
+        """Number of transitions currently stored (<= capacity)."""
         return self._size

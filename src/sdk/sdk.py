@@ -14,6 +14,12 @@ from src.utils.config_loader import load_config
 
 
 class RoboVacuumSDK:
+    """Single business-logic entry point: build envs, train, evaluate, and render-data.
+
+    Every UI / script / notebook imports only this class; it owns the wiring of
+    `VacuumEnv`, `DDPGAgent`, and `Trainer` so no business logic leaks into callers.
+    """
+
     def __init__(self, config_path: str | None = None) -> None:
         self.config_path = config_path
         self.cfg = load_config(config_path)
@@ -22,15 +28,19 @@ class RoboVacuumSDK:
         return f"{self.cfg['paths']['maps_dir']}/{map_name}.json"
 
     def build_env(self, map_name: str, seed: int | None = None) -> VacuumEnv:
+        """Construct a `VacuumEnv` over the named HouseExpo map (optionally seeded)."""
         house_map = load_house_map(self._map_path(map_name))
         return VacuumEnv(house_map, self.cfg, seed=seed)
 
     def map_walls(self, map_name: str) -> list[Segment]:
-        # Read-only geometry accessor so the trajectory renderer can draw walls
-        # through the single SDK entry point (scripts never import src.env).
+        """Return the map's wall segments so renderers draw geometry via the SDK only."""
         return load_house_map(self._map_path(map_name)).walls
 
     def train(self, seed: int, map_name: str | None = None, checkpoint_path: str | None = None) -> list[dict]:
+        """Train one seed on `map_name` (default first train map); save weights if a path is given.
+
+        Returns the per-episode history list.
+        """
         name = map_name or self.cfg["maps"]["train"][0]
         env = self.build_env(name, seed=seed)
         agent = DDPGAgent(env.state_dim, env.action_dim, self.cfg, seed=seed)
@@ -43,6 +53,7 @@ class RoboVacuumSDK:
     def rollout(
         self, agent: DDPGAgent, env: VacuumEnv, max_steps: int | None = None
     ) -> list[tuple[float, float]]:
+        """Run one greedy episode and return the robot's (x, y) path."""
         limit = max_steps if max_steps is not None else self.cfg["env"]["max_steps"]
         state = env.reset()
         path: list[tuple[float, float]] = []
@@ -56,6 +67,7 @@ class RoboVacuumSDK:
         return path
 
     def coverage_report(self, agent: DDPGAgent, env: VacuumEnv) -> dict:
+        """Run one greedy episode; return {coverage, steps, collisions}."""
         state = env.reset()
         steps = 0
         collisions = 0
@@ -74,8 +86,7 @@ class RoboVacuumSDK:
         }
 
     def evaluate(self, checkpoint_path: str | None, map_name: str, seed: int | None = None) -> dict:
-        # Contract amendment: build env+agent, load trained weights when given,
-        # then greedy report. checkpoint_path=None evaluates a fresh agent.
+        """Greedy coverage report on `map_name`, loading weights when given (None = fresh agent)."""
         agent, env = self._agent_env(map_name, checkpoint_path, seed)
         return self.coverage_report(agent, env)
 
@@ -96,9 +107,11 @@ class RoboVacuumSDK:
         seed: int | None = None,
         max_steps: int | None = None,
     ) -> dict:
-        # Greedy rollout, then return the cumulative cleaned-cell grid + extent +
-        # walls so render_coverage_heatmap.py can draw the "coverage map" (Q2)
-        # through the single SDK entry point (scripts never import src.env).
+        """Greedy rollout; return the cumulative cleaned-cell grid + extent + walls.
+
+        Feeds render_coverage_heatmap.py the "coverage map" (Q2) through the SDK
+        so scripts never import src.env directly.
+        """
         agent, env = self._agent_env(map_name, checkpoint_path, seed)
         self.rollout(agent, env, max_steps=max_steps)
         cov = env.coverage
@@ -115,7 +128,6 @@ class RoboVacuumSDK:
     def trajectory(
         self, map_name: str, checkpoint_path: str | None = None, seed: int | None = None
     ) -> list[tuple[float, float]]:
-        # Greedy (x, y) path for the trajectory figure; loads trained weights when
-        # given (F6/F30) so the figure is the trained policy, not a fresh agent.
+        """Greedy (x, y) path for the trajectory figure, loading trained weights when given (F6/F30)."""
         agent, env = self._agent_env(map_name, checkpoint_path, seed)
         return self.rollout(agent, env)

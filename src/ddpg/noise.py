@@ -10,6 +10,8 @@ import numpy as np
 
 
 class GaussianNoise:
+    """Additive Gaussian exploration noise with a linear sigma decay schedule."""
+
     def __init__(
         self,
         action_dim: int,
@@ -27,9 +29,11 @@ class GaussianNoise:
         self._rng = np.random.default_rng(seed)
 
     def sample(self) -> np.ndarray:
+        """Draw a zero-mean Gaussian noise vector at the current sigma."""
         return self._rng.normal(0.0, self.sigma, size=self.action_dim).astype(np.float32)
 
     def decay(self) -> None:
+        """Advance one step and linearly anneal sigma toward sigma_end (then clamp)."""
         self._step += 1
         frac = min(self._step / self.decay_steps, 1.0)
         self.sigma = self.sigma_start + (self.sigma_end - self.sigma_start) * frac

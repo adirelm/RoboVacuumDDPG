@@ -88,7 +88,7 @@ The action is concatenated with the state ($s\oplus a$) and fed through an MLP
 of widths `ddpg.hidden_sizes = [256, 256]` to a single scalar $Q$.
 
 Implementation: `src/model/critic.py` — the `Critic` MLP consuming
-`torch.cat([state, action], dim=-1)` (architecture test asserts the critic
+`torch.cat([state, action], dim=1)` (architecture test asserts the critic
 output is shape `(batch, 1)`).
 
 ---

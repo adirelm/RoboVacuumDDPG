@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 import torch
 
 from src.ddpg.agent import DDPGAgent
@@ -84,3 +85,19 @@ def test_save_then_load_restores_weights(tmp_path):
     fresh.load(str(ckpt))
     for p in fresh.actor.parameters():
         assert torch.allclose(p, torch.full_like(p, 0.42), atol=1e-9)
+
+
+def test_load_missing_checkpoint_raises(tmp_path):
+    agent = DDPGAgent(state_dim=20, action_dim=2, cfg=CFG, seed=0)
+    with pytest.raises(FileNotFoundError):
+        agent.load(str(tmp_path / "does_not_exist.pt"))
+
+
+def test_load_checkpoint_missing_key_raises(tmp_path):
+    # A checkpoint missing one of the four state_dicts must fail loudly, not
+    # silently load a partial agent.
+    bad = tmp_path / "partial.pt"
+    agent = DDPGAgent(state_dim=20, action_dim=2, cfg=CFG, seed=0)
+    torch.save({"actor": agent.actor.state_dict()}, str(bad))  # missing critic + targets
+    with pytest.raises(KeyError):
+        agent.load(str(bad))

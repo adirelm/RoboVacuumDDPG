@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from src.env.house_map import HouseMap, load_house_map
 from src.env.vacuum_env import VacuumEnv
@@ -114,3 +115,30 @@ def test_env_runs_on_real_curated_houseexpo_map():
         if done:
             break
     assert 0.0 <= info["coverage"] <= 1.0
+
+
+@pytest.mark.parametrize("map_name", ["room_single", "apt_small", "apt_multi", "apt_large", "office"])
+def test_spawn_is_inside_polygon_across_maps_and_seeds(map_name):
+    # The robot must spawn INSIDE the floor polygon on every curated map and seed
+    # — not merely collision-free, which on a non-convex plan can land in an
+    # exterior pocket. Regression for the _spawn is_inside fix (would fail RED on
+    # office/room_single/apt_small/apt_large before it).
+    hm = load_house_map(str(_REPO / "data" / "maps" / f"{map_name}.json"))
+    cfg = load_config()
+    for seed in range(25):
+        env = VacuumEnv(hm, cfg, seed=seed)
+        env.reset()
+        x, y, _theta = env.pose
+        assert hm.is_inside(x, y), f"{map_name} seed={seed} spawned outside polygon at ({x:.2f}, {y:.2f})"
+
+
+def test_spawn_falls_back_to_free_cell_when_random_search_exhausts(monkeypatch):
+    # Force every random sample to be rejected so _spawn falls through to the
+    # guaranteed-interior free-cell scan (vacuum_env.py fallback branch).
+    env = VacuumEnv(HMAP, CFG, seed=3)  # free mask built here (bbox -> all free)
+    monkeypatch.setattr(env.house_map, "is_inside", lambda _x, _y: False)
+    env.reset()
+    x, y, theta = env.pose
+    assert theta == 0.0  # the fallback returns heading 0.0 (random path returns a random angle)
+    # the chosen point is a collision-free interior cell centre, not the bbox centre
+    assert 0.17 <= x <= 3.83 and 0.17 <= y <= 3.83

@@ -1,5 +1,12 @@
 # RoboVacuumDDPG Implementation Plan
 
+> **FROZEN pre-implementation plan (historical).** This is the task-by-task plan
+> as authored *before* the build. It is kept verbatim for provenance and is
+> **superseded by the shipped docs** — any embedded first-draft snippets (e.g. an
+> early `COST_ANALYSIS` sketch with a "tiktoken" headline, or `PENDING` result
+> cells) do **not** reflect the final repo. For live state see `docs/COST_ANALYSIS.md`,
+> `docs/ANALYSIS.md`, `README.md`, and `docs/shared/PROMPTS.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build — from scratch — a 2D robotic-vacuum simulator over real HouseExpo maps and a DDPG agent that learns continuous coverage navigation.

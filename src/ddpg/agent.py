@@ -21,6 +21,12 @@ from src.model.critic import Critic
 
 
 class DDPGAgent:
+    """DDPG agent: online + hard-copied target Actor/Critic, replay buffer, Gaussian noise.
+
+    `act` selects a (optionally noise-perturbed) bounded action; `update` runs one
+    TD critic step + deterministic-policy-gradient actor step + Polyak `soft_update`.
+    """
+
     def __init__(self, state_dim: int, action_dim: int, cfg: dict, seed: int | None = None):
         if seed is not None:
             torch.manual_seed(seed)
@@ -42,6 +48,11 @@ class DDPGAgent:
         self.noise = GaussianNoise(action_dim, n["sigma_start"], n["sigma_end"], n["sigma_decay_steps"], seed)
 
     def act(self, state: np.ndarray, explore: bool = True) -> np.ndarray:
+        """Return the deterministic actor action, clipped to [-1, 1].
+
+        With `explore=True`, additive Gaussian noise is added before clipping
+        (data collection); `explore=False` gives the greedy policy mu(s).
+        """
         with torch.no_grad():
             s = torch.as_tensor(state, dtype=torch.float32).unsqueeze(0)
             action = self.actor(s).squeeze(0).numpy()
@@ -50,9 +61,15 @@ class DDPGAgent:
         return np.clip(action, -1.0, 1.0).astype(np.float32)
 
     def store(self, s, a, r, s2, done) -> None:
+        """Add a transition (s, a, r, s', done) to the replay buffer."""
         self.buffer.add(s, a, r, s2, done)
 
     def update(self) -> dict:
+        """One DDPG learning step: TD critic loss, DPG actor loss, clip, soft-update.
+
+        Returns the critic/actor loss dict, or {} when the buffer is below
+        `batch_size` (no update performed yet).
+        """
         if len(self.buffer) < self.batch_size:
             return {}
         s, a, r, s2, done = self.buffer.sample(self.batch_size)
@@ -73,6 +90,7 @@ class DDPGAgent:
         return {"critic_loss": float(critic_loss.item()), "actor_loss": float(actor_loss.item())}
 
     def soft_update(self) -> None:
+        """Polyak-average each target net toward its online net: pt <- tau*po + (1-tau)*pt."""
         for online, target in (
             (self.actor, self.actor_target),
             (self.critic, self.critic_target),

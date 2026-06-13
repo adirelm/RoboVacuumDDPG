@@ -38,13 +38,25 @@ class VacuumEnv:
         self.step_count = 0
 
     def _spawn(self) -> tuple[float, float, float]:
+        # Accept only points that are BOTH inside the floor polygon and
+        # collision-free; a collision-free check alone would place the robot in
+        # an exterior pocket on a non-convex plan (it is far from every wall yet
+        # outside the boundary).
         xmin, ymin, xmax, ymax = self.house_map.bounds
         pad = self.e["robot_radius"]
+        r = self.e["robot_radius"]
         for _ in range(100):
             x = float(self.rng.uniform(xmin + pad, xmax - pad))
             y = float(self.rng.uniform(ymin + pad, ymax - pad))
-            if not collides(x, y, self.e["robot_radius"], self.house_map.walls):
+            if self.house_map.is_inside(x, y) and not collides(x, y, r, self.house_map.walls):
                 return (x, y, float(self.rng.uniform(-math.pi, math.pi)))
+        # Fallback: first reachable free cell centre — guaranteed interior (the
+        # free mask is is_inside) and collision-free, unlike the bbox centre.
+        ixs, iys = np.where(self.coverage.free)
+        for ix, iy in zip(ixs, iys, strict=True):
+            x, y = float(self.coverage.cx[ix]), float(self.coverage.cy[iy])
+            if not collides(x, y, r, self.house_map.walls):
+                return (x, y, 0.0)
         return ((xmin + xmax) / 2.0, (ymin + ymax) / 2.0, 0.0)
 
     def _state(self) -> np.ndarray:
@@ -63,6 +75,7 @@ class VacuumEnv:
         )
 
     def reset(self) -> np.ndarray:
+        """Re-spawn at a random interior cell, clear the coverage grid, return the initial state."""
         self.coverage.reset()
         self.pose = self._spawn()
         self.v = 0.0
@@ -72,6 +85,7 @@ class VacuumEnv:
         return self._state()
 
     def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, dict]:
+        """Apply a [throttle, steer] action; return (state, reward, done, info) — the 4-tuple, no Gym."""
         a = np.clip(np.asarray(action, dtype=np.float32), -1.0, 1.0)
         throttle, steer = float(a[0]), float(a[1])
         cand = step_unicycle(

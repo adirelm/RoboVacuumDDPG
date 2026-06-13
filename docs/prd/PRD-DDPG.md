@@ -167,8 +167,9 @@ concatenation is `state ⊕ action` (F5.16), so the critic's first linear layer
 has `in_features == state_dim + action_dim` (action_dim = 2).
 
 ### 5.4 Finite, seeded update + noise schedule (blocking)
-- One full `agent.update(batch)` step produces **finite** (no NaN/Inf)
-  critic loss and actor loss, and finite gradients after `grad_clip = 1.0`.
+- One full `agent.update()` step (it samples a batch internally) produces
+  **finite** (no NaN/Inf) critic loss and actor loss, and finite gradients
+  after `grad_clip = 1.0`.
 - Replay sampling with a fixed seed returns reproducible index batches.
 - Gaussian noise: `σ` decays linearly from `σ_start = 0.2` to `σ_end = 0.05`
   over `sigma_decay_steps = 50 000` (F5.11–F5.13) and is clamped at `σ_end`

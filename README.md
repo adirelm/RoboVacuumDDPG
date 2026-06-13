@@ -22,7 +22,7 @@ no Gazebo, no Stable-Baselines3.
 > ruff clean · ≥85 % coverage (`fail_under=85`) · every `.py` ≤150 LOC · `uv` only.
 
 This README **is the submission-report shell** (ex05 deliverables). Section
-[3](#3-deliverables-brief-3) collects the graded deliverables; deeper detail
+[3](#3-deliverables-ex05-deliverables) collects the graded deliverables; deeper detail
 lives in the linked docs. Group code `adrl-001`; cover sheet `adrl-001-ex05.pdf`.
 
 ---
@@ -45,8 +45,9 @@ uv run python scripts/fetch_houseexpo.py
 ```
 
 Secrets (if ever needed) belong in a git-ignored `.env`; `.env-example`
-documents the expected keys. The `config/config.yaml` `version` field
-(`1.0.0`) is validated at load.
+documents the expected keys. The config loader checks that `config/config.yaml`
+exists and parses to a mapping; the `version` field (`1.0.0`) is asserted by the
+test suite (`tests/unit/test_config_loader.py`).
 
 ---
 
@@ -172,12 +173,14 @@ points at our own code lines for the Actor (`src/model/actor.py`), Critic
 
 A controlled one-at-a-time sweep over the lidar resolution `env.n_rays`
 (8 / 16 / 24) at a reduced budget — `scripts/sweep_n_rays.py` →
-[`results/sweep_n_rays.json`](results/sweep_n_rays.json), figure
+[`results/sweep_n_rays.json`](results/sweep_n_rays.json); the figure is then
+rendered by `scripts/render_sensitivity.py` →
 `results/figures/sensitivity_n_rays.png` — confirms the default **16 rays** as
 the most data-efficient setting (full table + reading in
 [`docs/ANALYSIS.md`](docs/ANALYSIS.md) § *Sensitivity analysis*).
 
 > ![n_rays sensitivity sweep](results/figures/sensitivity_n_rays.png)
+> *Regenerate: `uv run python scripts/sweep_n_rays.py` then `uv run python scripts/render_sensitivity.py`.*
 
 Every table above is reproduced from the SDK alone (no parallel implementation)
 in [`notebooks/analysis.ipynb`](notebooks/analysis.ipynb).
@@ -229,6 +232,7 @@ env:
   clean_radius: 0.17     # cleaning footprint radius (m)
   coverage_cell: 0.10    # coverage grid cell edge (m)
   max_steps: 1000        # steps per episode
+  coverage_target: 0.9   # episode ends early if this fraction of free cells is cleaned
 ```
 
 ### `reward` — shaping `r = k_coverage·Δcells − k_collision·hit − k_step`
@@ -265,7 +269,7 @@ logging:
 |---|---|
 | `ddpg` | `gamma` (0.99), `tau` (0.005), `lr_actor` (1e-4), `lr_critic` (1e-3), `batch_size`, `buffer_size`, `hidden_sizes`, `grad_clip`, `warmup_steps` |
 | `noise` | Gaussian `type`, `sigma_start`/`sigma_end`/`sigma_decay_steps` |
-| `env` | `n_rays` (16; 8/16/24 ablation), `ray_max`, `dt`, `v_max`, `omega_max`, `robot_radius`, `clean_radius`, `coverage_cell`, `max_steps` |
+| `env` | `n_rays` (16; 8/16/24 ablation), `ray_max`, `dt`, `v_max`, `omega_max`, `robot_radius`, `clean_radius`, `coverage_cell`, `max_steps`, `coverage_target` (0.9) |
 | `reward` | `k_coverage`, `k_collision`, `k_step` |
 | `training` | `episodes`, the 5 seeds `[42, 7, 123, 314, 271]` |
 | `maps` | HouseExpo `dataset_repo`/`dataset_sha`, `train` + `holdout` plan lists |

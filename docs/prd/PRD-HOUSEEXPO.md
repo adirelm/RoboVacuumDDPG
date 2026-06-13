@@ -103,7 +103,7 @@ concern (CLAUDE.md §1.4: scope is non-delegable) — it lives in
 > `7z` is **not** needed: the dataset ships as a gzip tar (`json.tar.gz`), which
 > `tarfile` handles natively. If a future HouseExpo release switches to `json.7z`,
 > install p7zip (`brew install p7zip` / `apt-get install p7zip-full`) and extract
-> with `7z x json.7z`, or `pip install py7zr` and swap the extractor — the curated
+> with `7z x json.7z`, or `uv add py7zr` and swap the extractor — the curated
 > bytes already committed under `data/maps/` keep the headline runs reproducible
 > regardless.
 

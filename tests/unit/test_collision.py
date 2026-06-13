@@ -29,3 +29,10 @@ def test_no_walls_means_no_collision():
 def test_collision_against_nearest_of_many():
     walls = [(5.0, -1.0, 5.0, 1.0), (0.05, -1.0, 0.05, 1.0)]
     assert collides(0.0, 0.0, ROBOT_R, walls) is True
+
+
+def test_degenerate_zero_length_segment_uses_point_distance():
+    # A zero-length "wall" (a point) exercises the denom == 0 guard: distance is
+    # the plain point-to-point distance, not a divide-by-zero.
+    assert collides(0.0, 0.0, ROBOT_R, [(1.0, 1.0, 1.0, 1.0)]) is False  # point ~1.41 away
+    assert collides(0.0, 0.0, ROBOT_R, [(0.10, 0.0, 0.10, 0.0)]) is True  # point 0.10 < 0.17

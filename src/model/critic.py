@@ -11,6 +11,8 @@ from torch import nn
 
 
 class Critic(nn.Module):
+    """Action-value network Q(s, a): an MLP over the concatenated state and action."""
+
     def __init__(self, state_dim: int, action_dim: int, hidden_sizes: list[int]):
         super().__init__()
         layers: list[nn.Module] = []
@@ -23,4 +25,5 @@ class Critic(nn.Module):
         self.body = nn.Sequential(*layers)
 
     def forward(self, state: torch.Tensor, action: torch.Tensor) -> torch.Tensor:
+        """Concatenate state and action on the feature axis and return the scalar Q, shape (batch, 1)."""
         return self.body(torch.cat([state, action], dim=1))

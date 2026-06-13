@@ -145,7 +145,7 @@ across the config `training.seeds = [42, 7, 123, 314, 271]`.
 - **O2 — Learning-curve trend**. Cumulative episode reward shows an
   upward trend over `training.episodes = 500`, reported as mean ± CI over
   the five seeds. This is the `learning_curve.png` deliverable.
-- **O3 — Critic stability**. Critic loss vs training step does not
+- **O3 — Critic stability**. Per-episode-mean critic loss vs episode does not
   diverge — the target-network + Polyak soft-update mechanism
   (`τ = 0.005`) keeps the TD target from chasing the online critic. This
   is the `critic_loss.png` deliverable and the empirical basis for
@@ -184,7 +184,7 @@ across the config `training.seeds = [42, 7, 123, 314, 271]`.
   cumulative reward vs episode as a mean ± CI envelope over the five
   seeds (rendered by `render_learning_curve.py`).
 - **D2**. `results/figures/critic_loss.png` exists (>1 KB) and shows
-  critic loss vs training step (rendered by `render_critic_loss.py`).
+  the per-episode-mean critic loss vs episode (rendered by `render_critic_loss.py`).
 - **D3**. Trajectory visualization exists (rendered by
   `render_trajectory.py`): the robot path drawn in colour over the 2D
   HouseExpo JSON map, covered area shaded, proving wall-avoidance and
@@ -321,7 +321,7 @@ duplicating the same mapping in two files).
   `render_learning_curve.py` writes `results/figures/learning_curve.png`
   (cumulative reward vs episode, mean ± CI over the five seeds).
 - **F20 (Critic-loss render, spec §7)**. `render_critic_loss.py` writes
-  `results/figures/critic_loss.png` (critic loss vs training step).
+  `results/figures/critic_loss.png` (per-episode-mean critic loss vs episode).
 - **F21 (Trajectory render, spec §7)**. `render_trajectory.py` draws the
   robot path in colour over the 2D HouseExpo JSON map with covered area
   shaded; optional short MP4/GIF animation.

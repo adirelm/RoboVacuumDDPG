@@ -321,7 +321,7 @@ class RoboVacuumSDK:
 | ID | Artifact | Source script | Definition |
 |---|---|---|---|
 | **D1** | `results/figures/learning_curve.png` | `render_learning_curve.py` | Cumulative reward vs episode, **mean ± CI over seeds** (`seeds=[42,7,123,314,271]`) |
-| **D2** | `results/figures/critic_loss.png` | `render_critic_loss.py` | Critic loss vs training step |
+| **D2** | `results/figures/critic_loss.png` | `render_critic_loss.py` | Per-episode-mean critic loss vs episode (bounded) |
 | **D3** | Trajectory visualization (PNG; optional short MP4/GIF) | `render_trajectory.py` | Robot path in colour over the 2D JSON map (covered area shaded) — proves wall-avoidance + smooth continuous coverage |
 | **D4** | `docs/ANALYSIS.md` | — | Answers the brief's **3 analysis questions**: (1) why DDPG not DQN/PPO (deterministic physical motors + continuous control + dataset reuse); (2) effect of removing Gaussian exploration noise early (coverage map collapses to a narrow path); (3) how target networks + soft updates prevent critic collapse |
 | **D5** | `docs/THEORY.md` | — | DDPG objective, deterministic policy gradient, critic TD target, Polyak update, exploration — LaTeX + citations (incl. HouseExpo: Li et al. 2019, arXiv:1903.09845) |

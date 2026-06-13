@@ -29,7 +29,7 @@
 ## Phase 2 — DDPG from scratch
 | Prompt | Commit | Human-judgment annotation |
 |---|---|---|
-| "Implement Actor (Tanh), Critic (state⊕action), ReplayBuffer, Gaussian noise, DDPGAgent (Polyak soft-update), Trainer — TDD." | `b1d7beb`→`b74cc73`; Trainer `aedfea7`; sigma-decay fix `179ff5b` | Architect chose Gaussian-not-OU (ADR-003), τ=0.005, LR split (ADR-007). |
+| "Implement Actor (Tanh), Critic (state⊕action), ReplayBuffer, Gaussian noise, DDPGAgent (Polyak soft-update), Trainer — TDD." | `b1d7beb`→`b74cc73`; Trainer `aedfea7` (its subject carries the Phase-3 stamp — the Trainer landed alongside the DDPG core); sigma-decay fix `179ff5b` | Architect chose Gaussian-not-OU (ADR-003), τ=0.005, LR split (ADR-007). |
 
 ## Phase 3 — Training + Results
 | Prompt | Commit | Human-judgment annotation |

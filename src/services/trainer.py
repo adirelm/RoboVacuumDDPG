@@ -14,6 +14,8 @@ from src.env.vacuum_env import VacuumEnv
 
 
 class Trainer:
+    """Custom DDPG training loop (no Gym): collect -> store -> update -> log, with warmup."""
+
     def __init__(self, env: VacuumEnv, agent: DDPGAgent, cfg: dict) -> None:
         self.env = env
         self.agent = agent
@@ -60,4 +62,5 @@ class Trainer:
         }
 
     def train(self, episodes: int) -> list[dict]:
+        """Run `episodes` episodes and return the per-episode history records."""
         return [self._run_episode(ep) for ep in range(episodes)]

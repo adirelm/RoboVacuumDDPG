@@ -11,6 +11,8 @@ from torch import nn
 
 
 class Actor(nn.Module):
+    """Deterministic policy network mu(s): an MLP with a final Tanh bounding action to (-1, 1)."""
+
     def __init__(self, state_dim: int, action_dim: int, hidden_sizes: list[int]):
         super().__init__()
         layers: list[nn.Module] = []
@@ -23,4 +25,5 @@ class Actor(nn.Module):
         self.body = nn.Sequential(*layers)
 
     def forward(self, state: torch.Tensor) -> torch.Tensor:
+        """Map a (batch, state_dim) tensor to a Tanh-bounded (batch, action_dim) action."""
         return torch.tanh(self.body(state))
