@@ -223,12 +223,12 @@ Q3). Hard updates would correspond to $\tau=1$.
 value), asserted at `DDPGAgent.__init__`. A dedicated unit test checks the
 Polyak math element-wise (spec §8).
 
-Implementation: `src/ddpg/agent.py:75-82`, `DDPGAgent.soft_update(self)` — for
+Implementation: `src/ddpg/agent.py:92-100`, `DDPGAgent.soft_update(self)` — for
 each `(online, target)` in `[(actor, actor_target), (critic, critic_target)]`,
 under `torch.no_grad()`:
-`pt.mul_(1.0 - self.tau).add_(self.tau * po)` (in-place Polyak update of each
-target parameter `pt` toward its online counterpart `po`). Called once per
-learning step from `update()` (agent.py:72).
+`pt.mul_(1.0 - self.tau).add_(self.tau * po)` (agent.py:100 — in-place Polyak
+update of each target parameter `pt` toward its online counterpart `po`). Called
+once per learning step from `update()` (agent.py:67).
 
 ---
 
@@ -255,9 +255,9 @@ $\sigma_{\text{end}}=0.05$ (`noise.sigma_end`), decay $50000$
 (`noise.sigma_decay_steps`), warmup $1000$ (`ddpg.warmup_steps`), noise type
 `gaussian` (`noise.type`).
 
-Implementation: `src/ddpg/noise.py` — `GaussianNoise.sample()` /
-`__call__()` (seeded for reproducibility, spec §8); applied to the actor action
-inside `DDPGAgent.act()` (`src/ddpg/agent.py`) during collection only.
+Implementation: `src/ddpg/noise.py:31` — `GaussianNoise.sample()` (seeded for
+reproducibility, spec §8); added to the actor action inside `DDPGAgent.act()`
+(`src/ddpg/agent.py:50`) during collection only (`explore=True`).
 
 ---
 

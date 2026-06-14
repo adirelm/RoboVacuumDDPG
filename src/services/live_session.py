@@ -62,6 +62,7 @@ class LiveSession:
         self._state = self.env.reset()
         self._episode = 0
         self._step = 0
+        self._fresh = True  # first frame (and post-reset) emits the spawn footprint as new_cells
 
     @property
     def meta(self) -> dict:
@@ -92,6 +93,9 @@ class LiveSession:
     def step(self, action=None) -> Frame:
         """Advance one step (mode-specific) and return the resulting Frame."""
         before, reward, collision, done = self._advance(action)
+        if self._fresh:  # surface the spawn footprint (already cleaned by reset) once
+            before = np.zeros_like(before)
+            self._fresh = False
         self._step += 1
         x, y, theta = self.env.pose
         frame = Frame(
@@ -111,6 +115,7 @@ class LiveSession:
         if done:
             self._state = self.env.reset()
             self._episode += 1
+            self._fresh = True  # next frame re-emits the new spawn footprint
         return frame
 
     def reset(self) -> None:

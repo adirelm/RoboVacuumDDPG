@@ -36,8 +36,10 @@ Pure Python + PyTorch/NumPy/Matplotlib; no Gymnasium/Gazebo/SB3 coupling
 upstream HouseExpo JSON format unchanged (`src/env/house_map.py`).
 
 ## 4. Usability
-Single entry point `RoboVacuumSDK` (`src/sdk/sdk.py`); CLI + figures, no GUI
-(see `docs/UX.md`). One-command install (`uv sync --dev`) and run.
+Single entry point `RoboVacuumSDK` (`src/sdk/sdk.py`); a Pygame live viewer
+(`scripts/play.py` — train/play/drive) plus the batch CLI + static figures
+(see `docs/UX.md`, which maps all 10 Nielsen heuristics). One-command install
+(`uv sync --dev`) and run.
 
 ## 5. Reliability
 Seeded determinism across 5 seeds `[42, 7, 123, 314, 271]`; gradient-norm clip

@@ -6,7 +6,7 @@ import pygame
 
 from src.gui import palette
 
-_CONTROLS = "T/P/D mode | space pause | r reset | +/- speed | L lidar | C cover | tab map | esc quit"
+_CONTROLS = "T/P/D | arrows drive | space pause | r reset | +/- speed | L/C overlay | tab map | s seed | esc"
 
 
 class Hud:
