@@ -61,6 +61,15 @@ def test_trajectory_loads_checkpoint_and_returns_path(tmp_path):
     assert all(len(p) == 2 for p in path)
 
 
+def test_live_session_streams_frames():
+    sdk = RoboVacuumSDK()
+    session = sdk.live_session("room_single", 42, "play")
+    frame = session.step()
+    assert frame.mode == "play"
+    assert len(frame.pose) == 3
+    assert len(frame.lidar_endpoints) == sdk.cfg["env"]["n_rays"]
+
+
 def test_coverage_grid_returns_renderable_dict():
     sdk = RoboVacuumSDK()
     grid = sdk.coverage_grid("room_single", seed=42, max_steps=5)

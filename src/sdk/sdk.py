@@ -9,6 +9,7 @@ from __future__ import annotations
 from src.ddpg.agent import DDPGAgent
 from src.env.house_map import Segment, load_house_map
 from src.env.vacuum_env import VacuumEnv
+from src.services.live_session import LiveSession
 from src.services.trainer import Trainer
 from src.utils.config_loader import load_config
 
@@ -89,6 +90,13 @@ class RoboVacuumSDK:
         """Greedy coverage report on `map_name`, loading weights when given (None = fresh agent)."""
         agent, env = self._agent_env(map_name, checkpoint_path, seed)
         return self.coverage_report(agent, env)
+
+    def live_session(
+        self, map_name: str, seed: int, mode: str, checkpoint_path: str | None = None
+    ) -> LiveSession:
+        """Return a per-step LiveSession (train/play/drive) for the GUI to stream Frames from."""
+        house_map = load_house_map(self._map_path(map_name))
+        return LiveSession(self.cfg, house_map, mode, seed=seed, checkpoint_path=checkpoint_path)
 
     def _agent_env(
         self, map_name: str, checkpoint_path: str | None = None, seed: int | None = None

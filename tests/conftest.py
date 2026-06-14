@@ -13,6 +13,7 @@ This file is incremental (contract F12): later phases APPEND fixtures
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 
 import pytest
@@ -20,7 +21,21 @@ import pytest
 from src.env.house_map import HouseMap
 from src.utils.config_loader import load_config
 
+# Headless SDL so the GUI render tests create Surfaces/fonts with no display
+# (works on the CI Linux runner). Set before any pygame import.
+os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
+os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
+
 Segment = tuple[float, float, float, float]
+
+
+@pytest.fixture
+def gui_surface():
+    """A blank offscreen pygame Surface for headless render tests."""
+    import pygame
+
+    pygame.init()
+    return pygame.Surface((900, 620))
 
 
 @dataclass

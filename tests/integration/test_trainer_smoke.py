@@ -42,6 +42,39 @@ def test_train_honors_warmup_no_update_before_threshold(tiny_map):
     assert history[0]["steps"] == 1
 
 
+def test_step_returns_next_state_info_done(tiny_map):
+    # The shared per-step routine used by both train() and the live GUI session.
+    cfg = _tiny_cfg()
+    env = VacuumEnv(tiny_map, cfg, seed=0)
+    agent = DDPGAgent(env.state_dim, env.action_dim, cfg, seed=0)
+    trainer = Trainer(env, agent, cfg)
+    state = env.reset()
+    next_state, info, done = trainer.step(state)
+    assert next_state.shape == state.shape
+    assert set(info) >= {"reward", "coverage", "collision", "pose", "action", "critic_loss"}
+    assert isinstance(done, bool)
+
+
+def test_train_is_deterministic_across_two_runs(tiny_map):
+    # Same seed + setup => bit-identical history. Guards the step() refactor against
+    # introducing nondeterminism and confirms the committed metrics reproduce on a
+    # given machine. (Exact float values are not pinned across OS/BLAS — torch CPU.)
+    cfg = _tiny_cfg()
+    cfg["env"]["max_steps"] = 8
+
+    def run() -> list[dict]:
+        env = VacuumEnv(tiny_map, cfg, seed=0)
+        agent = DDPGAgent(env.state_dim, env.action_dim, cfg, seed=0)
+        return Trainer(env, agent, cfg).train(episodes=3)
+
+    a, b = run(), run()
+    for ra, rb in zip(a, b, strict=True):
+        assert ra["reward"] == rb["reward"]
+        assert ra["coverage"] == rb["coverage"]
+        assert ra["steps"] == rb["steps"]
+        assert ra["critic_losses"] == rb["critic_losses"]
+
+
 def test_noise_sigma_decays_after_warmup_steps(tiny_map):
     # sigma must shrink during training: the trainer must call noise.decay() per
     # post-warmup step (otherwise sigma stays pinned at sigma_start forever).
