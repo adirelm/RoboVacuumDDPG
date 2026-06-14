@@ -1,18 +1,31 @@
-"""Doc contract (spec §2 §10, submission guidelines §10): UX.md records the
-N/A verdict — the surface is CLI + static figures, there is no GUI to evaluate.
+"""Doc contract (spec §2 §10, submission guidelines §10): UX.md documents the
+Pygame GUI — the three modes with screenshots, a controls reference, Nielsen's
+10 heuristics mapped to the UI, and accessibility notes.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 
-_DOC = Path(__file__).resolve().parent.parent.parent / "docs" / "UX.md"
+_ROOT = Path(__file__).resolve().parent.parent.parent
+_DOC = _ROOT / "docs" / "UX.md"
 
 
-def test_ux_doc_records_na_verdict() -> None:
+def test_ux_doc_covers_the_gui() -> None:
     text = _DOC.read_text(encoding="utf-8")
-    assert "## 1. Verdict — §10 Not Applicable (no GUI)" in text
-    assert "## 2. The interaction surface (CLI + static figures)" in text
-    assert "## 3. What a GUI would have added (and why it is out of scope)" in text
+    assert "Pygame" in text
+    assert "scripts/play.py" in text
     assert "RoboVacuumSDK" in text
-    assert "results/figures/" in text
+    # Nielsen's 10 heuristics are enumerated 1..10.
+    assert "Nielsen" in text
+    for n in range(1, 11):
+        assert f"{n}." in text, f"missing heuristic {n}"
+    # No leftover "Not Applicable" verdict now that a GUI exists.
+    assert "Not Applicable" not in text
+
+
+def test_ux_doc_embeds_mode_screenshots() -> None:
+    text = _DOC.read_text(encoding="utf-8")
+    for shot in ("train.png", "play.png", "drive.png", "play_no_checkpoint.png"):
+        assert f"assets/screenshots/{shot}" in text, f"missing screenshot {shot}"
+        assert (_ROOT / "assets" / "screenshots" / shot).exists(), f"{shot} not on disk"

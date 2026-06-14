@@ -76,3 +76,11 @@ paths:
 
 logging:
   level: "INFO"
+
+gui:                          # Pygame live viewer (scripts/play.py)
+  window_width: 900
+  window_height: 620
+  fps: 60
+  train_steps_per_frame: 4    # env/training steps advanced per rendered frame (speed)
+  trail_length: 400           # max path-trail points kept
+  demo_checkpoint: "assets/demo_policy.pt"

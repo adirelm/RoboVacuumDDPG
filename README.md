@@ -68,7 +68,22 @@ uv run python scripts/train.py                             # DDPG training loop 
 uv run python scripts/render_learning_curve.py             # results/figures/learning_curve.png
 uv run python scripts/render_critic_loss.py                # results/figures/critic_loss.png
 uv run python scripts/render_trajectory.py                 # trajectory over the JSON map
+
+# ---- Interactive Pygame viewer (watch training / play trained / drive) ----
+uv run python scripts/play.py                              # [T]rain [P]lay [D]rive, space=pause, esc=quit
 ```
+
+### Live viewer (Pygame GUI)
+
+`scripts/play.py` opens a single window with three modes — **T**rain (watch DDPG
+learn live), **P**lay (the committed `assets/demo_policy.pt` policy sweeping the
+room), and **D**rive (steer the vacuum yourself with the arrow keys). Full
+controls + Nielsen-heuristics write-up + per-mode screenshots are in
+[`docs/UX.md`](docs/UX.md).
+
+> ![Trained policy in the live viewer](assets/screenshots/play.png)
+> *PLAY mode: the trained policy's wall-following sweep (~38% coverage) with
+> lidar rays and the live HUD.*
 
 All business logic is reachable through the single SDK entry point
 `RoboVacuumSDK` (`src/sdk/sdk.py`); the CLI, notebooks, and scripts import only

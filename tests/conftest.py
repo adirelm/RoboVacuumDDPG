@@ -32,7 +32,7 @@ Segment = tuple[float, float, float, float]
 @pytest.fixture
 def gui_surface():
     """A blank offscreen pygame Surface for headless render tests."""
-    import pygame
+    import pygame  # noqa: PLC0415  (lazy: only GUI tests need pygame)
 
     pygame.init()
     return pygame.Surface((900, 620))

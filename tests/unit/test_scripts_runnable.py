@@ -26,6 +26,8 @@ _REPO = Path(__file__).resolve().parents[2]
         "render_coverage_heatmap",
         "sweep_n_rays",
         "render_sensitivity",
+        "play",
+        "capture_screenshots",
     ],
 )
 def test_script_imports_resolve_when_run_directly(script: str) -> None:

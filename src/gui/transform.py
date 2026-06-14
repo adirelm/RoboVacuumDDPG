@@ -26,8 +26,8 @@ class View:
         """Map world (x, y) in metres to integer screen pixels (y flipped)."""
         px = self.off_x + (x - self.xmin) * self.scale
         py = self.off_y + (self.span_y - (y - self.ymin)) * self.scale
-        return (int(round(px)), int(round(py)))
+        return (round(px), round(py))
 
     def scale_len(self, metres: float) -> int:
         """Scale a length in metres to a pixel length."""
-        return int(round(metres * self.scale))
+        return round(metres * self.scale)

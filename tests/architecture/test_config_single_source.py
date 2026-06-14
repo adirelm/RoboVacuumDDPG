@@ -56,6 +56,17 @@ def test_every_hyperparameter_resolves_through_config() -> None:
     reward = get("reward")
     for key in ("k_coverage", "k_collision", "k_step"):
         assert key in reward, f"reward.{key} missing from config"
+    gui = get("gui")
+    gui_keys = (
+        "window_width",
+        "window_height",
+        "fps",
+        "train_steps_per_frame",
+        "trail_length",
+        "demo_checkpoint",
+    )
+    for key in gui_keys:
+        assert key in gui, f"gui.{key} missing from config"
     assert abs(float(ddpg["gamma"]) - 0.99) < 1e-9
     assert abs(float(ddpg["tau"]) - 0.005) < 1e-9
 

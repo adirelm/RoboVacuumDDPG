@@ -24,6 +24,8 @@ dev = [
 [tool.pytest.ini_options]
 addopts = "--cov=src --cov-report=term-missing --cov-fail-under=85"
 testpaths = ["tests"]
+# pygame imports pkg_resources at import time (third-party, harmless).
+filterwarnings = ["ignore:pkg_resources is deprecated:UserWarning"]
 
 # Stricter-than-spec Ruff (documented deviation, mirrors A4): 110/py311 + PL + RUF.
 [tool.ruff]
