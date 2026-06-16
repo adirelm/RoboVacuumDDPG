@@ -215,7 +215,7 @@ No SB3. The agent is assembled from four focused ≤150-LOC modules (spec §4):
   `warmup_steps`) sample → `update` → `soft_update` → log. **No Gym loop.**
 
 All reachable only through `RoboVacuumSDK` (`src/sdk/sdk.py`):
-`build_env / train / evaluate / rollout / coverage_report / trajectory / map_walls / coverage_grid`.
+`build_env / train / evaluate / rollout / coverage_report / trajectory / map_walls / coverage_grid / live_session`.
 
 ## 7. References
 

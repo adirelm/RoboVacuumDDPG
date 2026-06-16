@@ -58,3 +58,13 @@ def test_reset_restarts_episode(tiny_map):
     s.step()
     s.reset()  # no error; fresh episode state
     assert s.step().coverage >= 0.0
+
+
+def test_reset_re_emits_spawn_footprint(tiny_map):
+    # A manual reset must behave like the internal done-driven reset: the next
+    # frame re-surfaces the spawn footprint as new_cells (regression guard for
+    # _fresh being set in reset()).
+    s = _session("play", tiny_map)
+    s.step()  # consume the initial spawn-prime frame
+    s.reset()
+    assert s.step().new_cells, "reset() should re-prime new_cells with the spawn footprint"

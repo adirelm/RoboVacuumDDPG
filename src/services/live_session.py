@@ -121,6 +121,7 @@ class LiveSession:
     def reset(self) -> None:
         """Restart the current episode (fresh spawn + cleared coverage grid)."""
         self._state = self.env.reset()
+        self._fresh = True  # next frame re-emits the spawn footprint (matches the done-driven reset)
 
     def _lidar(self, x: float, y: float, theta: float) -> list[tuple[float, float]]:
         e = self.cfg["env"]

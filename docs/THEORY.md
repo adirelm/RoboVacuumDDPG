@@ -275,7 +275,7 @@ One call to `DDPGAgent.update()` chains §3 → §4 → §5:
 The collection ↔ store ↔ update ↔ log outer loop lives in
 `src/services/trainer.py`; the SDK (`src/sdk/sdk.py` `RoboVacuumSDK`) is the
 single entry point (`build_env`, `train`, `evaluate`, `rollout`,
-`coverage_report`, `trajectory`, `map_walls`, `coverage_grid`). The
+`coverage_report`, `trajectory`, `map_walls`, `coverage_grid`, `live_session`). The
 episode-return trace is the deliverable
 `results/figures/learning_curve.png` (spec §7, mean±CI over
 `training.seeds = [42, 7, 123, 314, 271]`).

@@ -48,9 +48,12 @@ Any AI change that alters a human-decided concern needs explicit sign-off first.
 ## Deliverables (brief §3)
 
 `results/figures/learning_curve.png` (cumulative reward vs episode) +
-`critic_loss.png` (critic loss vs step); a **trajectory visualization** (colored
-path over the JSON map, covered area shaded; optional animation);
-`docs/ANALYSIS.md` answering the 3 required questions; `docs/THEORY.md` (DDPG math).
+`critic_loss.png` (per-episode-mean critic loss vs episode); a **trajectory
+visualization** (colored path over the JSON map, covered area shaded) +
+`coverage_heatmap.png`; `docs/ANALYSIS.md` answering the 3 required questions;
+`docs/THEORY.md` (DDPG math). Plus a **Pygame live viewer** (`scripts/play.py` +
+`src/gui/*`, SDK-only imports) — train/play/drive modes — documented in
+`docs/UX.md` (§10: three modes with screenshots + Nielsen heuristics).
 
 ## Version Control
 

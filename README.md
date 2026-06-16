@@ -301,7 +301,7 @@ modules before the cap is hit.
 src/
 ├── sdk/sdk.py            # RoboVacuumSDK — single business-logic entry
 │                         #   (build_env, train, evaluate, rollout, coverage_report,
-│                         #    trajectory, map_walls, coverage_grid)
+│                         #    trajectory, map_walls, coverage_grid, live_session)
 ├── env/
 │   ├── house_map.py      # HouseExpo JSON → wall segments + free-space bounds
 │   ├── raycast.py        # ray–segment intersection → lidar distances
