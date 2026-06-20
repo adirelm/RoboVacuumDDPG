@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import logging
+
 import pytest
 
-from src.utils.config_loader import get, load_config
+from src.utils.config_loader import get, load_config, setup_logging
 
 
 def test_load_config_returns_dict_with_version() -> None:
@@ -13,8 +15,30 @@ def test_load_config_returns_dict_with_version() -> None:
     assert cfg["version"] == "1.0.0"
 
 
-def test_load_config_is_cached_same_object() -> None:
-    assert load_config() is load_config()
+def test_load_config_is_cached_equal_value() -> None:
+    # Repeated loads must be value-equal (parse is cached) but NOT the same object:
+    # each call returns its own deepcopy so caller mutations cannot leak.
+    first, second = load_config(), load_config()
+    assert first == second
+    assert first is not second
+
+
+def test_load_config_returns_isolated_copy() -> None:
+    # Mutating a returned config must not poison the shared cached parse.
+    c = load_config()
+    original_gamma = c["ddpg"]["gamma"]
+    c["ddpg"]["gamma"] = 999.0
+    fresh = load_config()
+    assert fresh["ddpg"]["gamma"] == original_gamma
+    assert fresh["ddpg"]["gamma"] != 999.0
+
+
+def test_get_returns_isolated_copy() -> None:
+    # get(...) must likewise hand back a caller-local copy.
+    block = get("ddpg")
+    original_gamma = block["gamma"]
+    block["gamma"] = 999.0
+    assert get("ddpg")["gamma"] == original_gamma
 
 
 def test_get_ddpg_block_has_tau() -> None:
@@ -54,3 +78,16 @@ def test_load_config_non_dict_yaml_raises_valueerror(tmp_path) -> None:
     scalar.write_text("just-a-string\n", encoding="utf-8")
     with pytest.raises(ValueError, match="did not parse to a dict"):
         load_config(str(scalar))
+
+
+def test_setup_logging_applies_config_level() -> None:
+    # EXT-1: the documented config.logging.level knob actually sets the root level.
+    root = logging.getLogger()
+    prev = root.level
+    try:
+        setup_logging({"logging": {"level": "WARNING"}})
+        assert root.level == logging.WARNING
+        setup_logging({"logging": {"level": "DEBUG"}})
+        assert root.level == logging.DEBUG
+    finally:
+        root.setLevel(prev)

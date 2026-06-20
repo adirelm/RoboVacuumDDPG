@@ -49,18 +49,23 @@ seeds**. Exploratory runs may use any seed; they just cannot be cited.
 > earlier `training.eval_every` knob was dropped from config rather than left dead.
 
 **Held-out generalization (design spec §6, maps from ADR-005).** The agent
-trains **only** on `maps.train = ["room_single", "apt_small", "apt_multi"]` and
-is evaluated on **`maps.holdout = ["apt_large", "office"]`**, which are never seen
-during training. The held-out coverage % (mean ± CI over the five seeds) is the
-generalization headline.
+trains on **`room_single` only** — the canonical `train()` driver uses the first
+`maps.train` entry (`maps.train[0]`); `apt_small`/`apt_multi` are configured but
+reserved for future multi-map training (see `docs/ANALYSIS.md`). It is evaluated
+on **`maps.holdout = ["apt_large", "office"]`**, which are never seen during
+training. The held-out coverage % (mean ± 95% CI over the five seeds, computed by
+`scripts/evaluate.py`, which loads each trained checkpoint and fails loudly if one
+is missing) is the generalization headline.
 
 **Evaluation is deterministic.** During eval rollouts the Gaussian exploration
 noise (ADR-003) is **off** — the policy acts greedily (`a = μ(s)`, clipped) — so
 the curve reflects the learned policy, not exploration. The two required figures
 are produced by `render_learning_curve.py` (cumulative reward vs episode, mean ±
 CI) and `render_critic_loss.py` (critic loss vs training step), per design spec
-§7. The `render_trajectory.py` plot is rendered for a held-out map to visually
-demonstrate generalization (wall-avoidance + smooth coverage on unseen geometry).
+§7. The `render_trajectory.py` plot is rendered on the **training** map
+`room_single` (a qualitative view of the trained policy's coverage sweep);
+generalization is reported **numerically** via the held-out coverage table in
+`docs/ANALYSIS.md`, not via a held-out trajectory figure.
 
 **Failure discipline.** If a canonical seed diverges or NaN-crashes, we **do not
 silently drop it** — the run is re-launched with a logged justification, and the
@@ -74,8 +79,8 @@ say so).
   rather than an anecdote; the CI band is exactly what `learning_curve.png`
   requires (design spec §7).
 - A strict never-trained-on held-out set (`apt_large`, `office`) makes the
-  generalization claim real — the trajectory plot on a held-out map is direct
-  visual proof.
+  generalization claim real — the held-out coverage table (mean ± 95% CI over the
+  five seeds) is the quantitative evidence.
 - Seeds and schedule live in config (single source), so a grader reproduces the
   exact reported runs from a fresh checkout.
 - Deterministic (noise-off) eval cleanly separates "what the policy learned" from

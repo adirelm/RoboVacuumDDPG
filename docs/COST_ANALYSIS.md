@@ -3,12 +3,15 @@
 > This project bills **no paid inference API**: the shipped artifact calls no
 > model, so the only real "spend" is local CPU wall-clock (§4) plus the
 > qualitative AI-tooling session envelope (§3/§5). `src/cost/meter.py` is a
-> dependency-free **`RuntimeMeter`** (wall-clock timer + step/episode counters)
-> the training loop polls to keep the runtime cost honest — it is *not* a token
+> dependency-free **`RuntimeMeter`** (wall-clock timer + step/episode counters) —
+> a unit-tested instrument *available* to the training loop, but it is **not
+> currently wired into the multi-seed training driver**, so the §4 per-seed
+> wall-clock figures are **estimates**, not meter readings. It is *not* a token
 > counter, and we do not invent a dollar figure (spec §10 honesty stance). The
 > architect↔implementer prompt volume is not separately token-metered (no paid
 > API to bill); instead we report the concrete **artifact corpus size** (§1/§2)
-> and the **CPU runtime** (§4). The architect owns the spend cap (CLAUDE.md §1.4).
+> and the **(estimated) CPU runtime** (§4). The architect owns the spend cap
+> (CLAUDE.md §1.4).
 
 ## 1. Headline — artifact corpus size (concrete)
 
@@ -16,15 +19,16 @@ The measurable "input volume" of the committed artifact, counted
 encoder-independently from `git ls-files`. The `~tokens` column is a transparent
 `chars / 4` estimate — no tiktoken dependency is shipped, so we do **not** claim a
 specific BPE token count. Lines/chars/tokens are rounded to ≈3 significant
-figures, measured at the release tree (a release commit's own doc edits shift
-the totals by a fraction of a percent; we round rather than chase that tail).
+figures, measured at the **v1.0.0 release tree** (HEAD `925effd`) via `git ls-files`
+over tracked `.py` (src + scripts / tests) and `.md` (docs recursive + README);
+re-measure with the same command set if the tree moves.
 
 | Corpus | Files | Lines | Chars | ~Tokens (chars/4) |
 |---|---:|---:|---:|---:|
-| `src/` + `scripts/` (.py) | 38 | ≈1,820 | ≈64.8k | ~16.2k |
-| `tests/` (.py) | 49 | ≈2,400 | ≈82.9k | ~20.7k |
-| `docs/` (.md) + README | 24 | ≈9,030 | ≈428k | ~107k |
-| **Total artifact** | **111** | **≈13.3k** | **≈575k** | **~144k** |
+| `src/` + `scripts/` (.py) | 49 | ≈2,500 | ≈92.9k | ~23.2k |
+| `tests/` (.py) | 58 | ≈2,850 | ≈100k | ~25.1k |
+| `docs/` (.md, recursive) + README | 26 | ≈9,400 | ≈458k | ~115k |
+| **Total artifact** | **133** | **≈14.8k** | **≈651k** | **~163k** |
 
 No model is called during training or evaluation, so there is no per-call token
 bill; the spend that matters for this assignment is the CPU wall-clock in §4.
@@ -32,14 +36,15 @@ bill; the spend that matters for this assignment is the CPU wall-clock in §4.
 ## 2. Appendix — chars & bytes
 
 Encoder-independent byte sizes of the same corpus (chars are in §1), for
-reproducibility (same rounding/measurement note as §1).
+reproducibility (same rounding/measurement note as §1). The corpus is ~99 % ASCII
+(a few math glyphs like τ/γ/≈/→ add <1 %), so chars ≈ bytes at this rounding.
 
 | Corpus | Chars | Bytes (UTF-8) |
 |---|---:|---:|
-| `src/` + `scripts/` (.py) | ≈64.8k | ≈64.9k |
-| `tests/` (.py) | ≈82.9k | ≈83.0k |
-| `docs/` (.md) + README | ≈428k | ≈433k |
-| **Total** | **≈575k** | **≈581k** |
+| `src/` + `scripts/` (.py) | ≈92.9k | ≈92.9k |
+| `tests/` (.py) | ≈100k | ≈100k |
+| `docs/` (.md, recursive) + README | ≈458k | ≈458k |
+| **Total** | **≈651k** | **≈651k** |
 
 ## 3. AI-tooling cost
 
@@ -64,16 +69,24 @@ DDPG nets are small (`hidden_sizes = [256, 256]`).
 | Episodes per seed | 500 |
 | Seeds | 5 (42, 7, 123, 314, 271) |
 | Max steps / episode | 1000 (≈ 500k env steps / seed) |
-| Wall-clock per seed | ~40–80 min (CPython, torch **CPU**) |
-| Total wall-clock (5 seeds) | ≈ 4 h (sequential, one process) |
+| Wall-clock per seed | ~40–80 min (CPython, torch **CPU**) — **estimated, not metered** |
+| Total wall-clock (5 seeds) | ≈ 4 h (sequential, one process) — **estimated** |
 | Peak RSS | laptop-class, replay buffer (`buffer_size = 1e6`) dominates — fits in commodity RAM |
 | Device | CPU only — no GPU used or required (`hidden_sizes = [256, 256]`) |
 
-Runtime is dominated by **per-step raycasting** (the lidar `n_rays = 16`
-ray–segment math, vectorized over wall segments in `src/env/raycast.py`) plus the
-critic/actor gradient updates; the nets are tiny, so the bottleneck is the
-simulator loop, not the torch backward pass. The 5 seeds are independent and
-were run **sequentially for reproducibility** (see §15 in `docs/QUALITY.md`).
+Runtime is dominated by the **DDPG gradient update** (`agent.update`: the
+critic + actor backward pass, ≈ 4 ms/step measured), which runs on ~99.8% of
+steps (warmup is only 1000 of ~500k). The simulator `env.step` — whose per-step
+hotspot is the `n_rays = 16` per-segment lidar raycasting in
+`src/env/raycast.py` — is ≈ 0.1–0.3 ms/step (~14–43× cheaper), so it does **not**
+dominate wall-clock. The 5 seeds are independent and were run **sequentially for
+reproducibility** (see §15 in `docs/QUALITY.md`).
+
+> **Caveat (honesty, spec §10):** the per-seed/total wall-clock above is an
+> **estimate** from observed runs, **not** a `RuntimeMeter` reading — the meter
+> (`src/cost/meter.py`) is implemented and unit-tested but is not yet wired into
+> `scripts/train.py` / the multi-seed driver, and no timing field is persisted in
+> `results/history/*.json`. Treat ≈4 h as order-of-magnitude, not measured.
 
 ## 5. Cost envelope — architect spend cap vs running total
 
@@ -88,6 +101,7 @@ The architect set a spend cap (CLAUDE.md §1.4 *cost-budget envelope* row).
 The cap was honoured the easy way: by **design there is no paid inference in the
 artifact**, so the only cost is the ≈ 4 h of local CPU compute in §4. Training
 was time-boxed at 500 episodes × 5 seeds; the seed-271 outlier
-(−175.5 tail reward) and the held-out overfitting (coverage 0.39 → ~0.003) are
+(−175.5 tail reward) and the partial held-out generalization (≈0.39 on the training map → 0.10–0.18 on
+unseen maps, at a real collision cost) are
 reported honestly (spec §10), not masked by extending the run until the numbers
 looked uniform — see `docs/ANALYSIS.md`.

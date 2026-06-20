@@ -157,10 +157,11 @@ across the config `training.seeds = [42, 7, 123, 314, 271]`.
   `θ_target = τ·θ + (1−τ)·θ_target` holds for both actor and critic
   targets, verified symbolically against the closed form on a synthetic
   step (`τ = 0.005`).
-- **O6 — Generalization**. The policy is trained on the `maps.train`
-  subset (`room_single`, `apt_small`, `apt_multi`) and evaluated on the
-  held-out `maps.holdout` subset (`apt_large`, `office`); the held-out
-  coverage gap is reported honestly, not hidden.
+- **O6 — Generalization**. The policy is trained on **`room_single` only**
+  (`maps.train[0]`; `apt_small`/`apt_multi` are configured but reserved for
+  future multi-map training) and evaluated on the held-out `maps.holdout`
+  subset (`apt_large`, `office`); the held-out coverage gap (mean ± 95 % CI
+  over the 5 seeds) is reported honestly, not hidden.
 
 ### 2.2 Engineering KPIs
 
@@ -492,8 +493,8 @@ out head-on so the `docs/ANALYSIS.md` results are read in the right frame.
   within the compute budget, it is reported honestly (like A4) rather
   than overstated.
 - **L6 — Raycasting performance.** Raycast cost grows with map complexity
-  and ray count; the mitigations (vectorized segment math, capped ray
-  count via `n_rays`, coarse coverage grid via `coverage_cell`) trade
+  and ray count; the mitigations (capped ray count via `n_rays`, coarse coverage grid via
+  `coverage_cell`, and the small fixed `n_rays`-by-`n_walls` per-segment loop) trade
   fidelity for speed and are documented in ADR-001/ADR-004.
 - **L7 — Reproducibility has known gaps.** CPU seeding is enforced (N7);
   CUDA / MPS kernel non-determinism can still introduce run-to-run drift

@@ -1,8 +1,21 @@
+import yaml
+
 from src.gui.app import App
+from src.utils.config_loader import load_config
 
 
 def _app():
     return App(["room_single"], seed=42, checkpoint_path=None)
+
+
+def _short_episode_config(tmp_path):
+    """Write a config copy that forces an episode to end after one step."""
+    cfg = load_config()
+    cfg["env"]["max_steps"] = 1
+    cfg["env"]["coverage_target"] = 1.0  # isolate the max_steps episode trigger
+    path = tmp_path / "short_config.yaml"
+    path.write_text(yaml.safe_dump(cfg), encoding="utf-8")
+    return str(path)
 
 
 def test_app_update_then_draw_runs(gui_surface):
@@ -69,3 +82,16 @@ def test_cycle_map_wraps(gui_surface):
     assert app.map_idx == 1
     app.handle_command("cycle_map")
     assert app.map_idx == 0  # wraps
+
+
+def test_completed_episode_records_reward_and_resets(gui_surface, tmp_path):
+    # With max_steps=1 every step ends the episode, so _absorb hits the frame.done
+    # branch (app.py:59-63): the per-episode reward is banked into episode_rewards
+    # and the live trail/coverage are cleared for the next episode.
+    app = App(["room_single"], seed=42, checkpoint_path=None, config_path=_short_episode_config(tmp_path))
+    # _new_session already took one (done) step during construction.
+    assert app.episode_rewards, "a completed episode must append its reward"
+    assert app.covered == [] and app.trail == [], "trail/coverage must reset after a done step"
+    n = len(app.episode_rewards)
+    app.update()  # advances `speed` more one-step episodes
+    assert len(app.episode_rewards) > n, "each completed episode appends another reward"

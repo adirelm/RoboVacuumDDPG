@@ -14,9 +14,11 @@ no Gazebo, no Stable-Baselines3.
 > the real HouseExpo map `room_single` (≈ 4 h CPU). **Honest result summary:** the
 > DDPG agent **learns coverage control on `room_single`** — across-seed
 > **691.3 ± 443.1** reward and **≈ 39 % coverage** per episode (one outlier, seed
-> 271, did not lock in). It **does *not* yet generalize** to the held-out maps
-> (`apt_large` 0.32 %, `office` 0.28 % coverage) — single-map training overfits
-> the geometry. Full numbers + the three analysis questions in
+> 271, did not lock in). It **generalizes only partially** to the held-out maps
+> (`apt_large` **10.4 % ± 5.7 %**, `office` **17.9 % ± 7.9 %** coverage, mean ± 95 %
+> CI over the 5 seeds) — it carries a sweep behaviour to unseen geometry but at a
+> real collision cost (≈ 162 / ≈ 508 bumps/episode), so single-map training has
+> not learned transferable wall-avoidance. Full numbers + the three analysis questions in
 > [`docs/ANALYSIS.md`](docs/ANALYSIS.md); committed metrics in
 > [`results/metrics_summary.json`](results/metrics_summary.json). Quality gates:
 > ruff clean · ≥85 % coverage (`fail_under=85`) · every `.py` ≤150 LOC · `uv` only.
@@ -198,7 +200,9 @@ the most data-efficient setting (full table + reading in
 > *Regenerate: `uv run python scripts/sweep_n_rays.py` then `uv run python scripts/render_sensitivity.py`.*
 
 Every table above is reproduced from the SDK alone (no parallel implementation)
-in [`notebooks/analysis.ipynb`](notebooks/analysis.ipynb).
+in [`notebooks/analysis.ipynb`](notebooks/analysis.ipynb). Run it with the
+optional notebook dependency group: `uv run --group notebook jupyter lab`
+(or headless: `uv run --group notebook jupyter nbconvert --to notebook --execute notebooks/analysis.ipynb`).
 
 ---
 
@@ -337,7 +341,7 @@ soft-update is Polyak, SDK single-entry, config single-source.
 - `docs/PLAN.md` (C4 + UML + ADRs) · `docs/TODO.md` (phased + DoD)
 - [`docs/THEORY.md`](docs/THEORY.md) — DDPG objective, deterministic policy gradient, critic TD target, Polyak update
 - [`docs/ANALYSIS.md`](docs/ANALYSIS.md) — the 3 required analysis questions
-- `docs/COST_ANALYSIS.md` · `docs/QUALITY.md` (ISO 25010) · `docs/UX.md` (CLI/figures) · `docs/shared/PROMPTS.md`
+- `docs/COST_ANALYSIS.md` · `docs/QUALITY.md` (ISO 25010) · `docs/UX.md` (§10: Pygame live viewer + Nielsen heuristics) · `docs/shared/PROMPTS.md`
 - `docs/adr/` — ADR-001 (no Gym/Gazebo) · ADR-002 (unicycle) · ADR-003 (Gaussian not OU) · ADR-004 (coverage grid) · ADR-005 (HouseExpo adapter) · ADR-006 (reward shaping) · ADR-007 (net sizing + τ) · ADR-008 (multi-seed + held-out generalization)
 - [`notebooks/analysis.ipynb`](notebooks/analysis.ipynb) — SDK-only reproduction of every results table (LaTeX + citations)
 

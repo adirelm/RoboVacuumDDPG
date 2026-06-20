@@ -25,3 +25,17 @@ def test_curve_draws_the_reward_polylines(gui_surface):
     }
     assert palette.CURVE in pixels, "raw reward polyline not drawn"
     assert palette.ROLL in pixels, "rolling-mean polyline not drawn"
+
+
+def test_sign_crossing_series_draws_zero_line(gui_surface):
+    # A series that straddles 0 (lo<0<hi) must draw the ZERO_LINE axis at the
+    # computed zero-y, spanning the rect width (curve_view.py:37-38). Strictly
+    # positive/empty series skip this branch, so it needs its own case.
+    rect = pygame.Rect(10, 10, 300, 150)
+    gui_surface.fill(palette.BG)
+    rewards = [-20.0, 30.0, -5.0, 40.0]
+    draw_curve(gui_surface, rect, rewards)
+    lo, hi = min(rewards), max(rewards)
+    zy = int(rect.bottom - rect.height * (0.0 - lo) / (hi - lo))
+    row = {gui_surface.get_at((x, zy))[:3] for x in range(rect.left, rect.right)}
+    assert palette.ZERO_LINE in row, "zero-reference axis not drawn at the computed y"

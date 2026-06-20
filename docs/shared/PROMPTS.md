@@ -39,4 +39,9 @@
 ## Phase 4 — Docs + Analysis + Gates
 | Prompt | Commit | Human-judgment annotation |
 |---|---|---|
-| "Author architecture tests, ANALYSIS (3 questions), COST_ANALYSIS, QUALITY (ISO 25010), UX (§10 N/A), README, cover sheet; run final gates; tag v1.0.0." | tests `6cab8f1`/`1b2aa6a`, docs `1b8eed1`→`19edbdd`; finalized `ecade36`/`477646d`; sensitivity `99e1142`; CI PII-skip `4e752dc` | Architect signs off the self-grade (cover sheet only) and the submission. |
+| "Author architecture tests, ANALYSIS (3 questions), COST_ANALYSIS, QUALITY (ISO 25010), UX (§10 N/A at this phase — CLI + static figures only), README, cover sheet; run final gates; tag v1.0.0." | tests `6cab8f1`/`1b2aa6a`, docs `1b8eed1`→`19edbdd`; finalized `ecade36`/`477646d`; sensitivity `99e1142`; CI PII-skip `4e752dc` | Architect signs off the self-grade (cover sheet only) and the submission. |
+
+## Phase 5 — Pygame live viewer (§10 flips N/A → in scope)
+| Prompt | Commit | Human-judgment annotation |
+|---|---|---|
+| "Design + ship an interactive Pygame live viewer (train / play / drive modes) that consumes the SDK only (`sdk.live_session` streams per-step `Frame`s), so §10 usability + Nielsen heuristics + per-state screenshots become evaluable — without breaking SDK single-entry." | design spec/plan `f9bae9d`; foundation `17b225b`; viewer `ab31946`; verifier polish `ec5e8fe`; tri-model sync (SDK method lists, CLAUDE.md, `reset()` re-prime) `925effd` | Architect decided to scope §10 back IN (was N/A) and approved the live-viewer design spec (`docs/superpowers/specs/2026-06-14-pygame-live-viewer-design.md`) before any GUI code; required the GUI stay a presentation layer over the SDK (no env/agent reach-in). |

@@ -7,6 +7,8 @@ Contract (docs/superpowers/plans/_contract.md):
 
 from __future__ import annotations
 
+import copy
+import logging
 from functools import cache
 from pathlib import Path
 
@@ -29,14 +31,23 @@ def _load_cached(cfg_path: str) -> dict:
 
 
 def load_config(path: str | None = None) -> dict:
-    """Load and cache the YAML config; repeated calls with the same path return the cached dict object."""
+    """Cache the YAML parse; return a fresh deepcopy each call so caller mutations never poison the cache."""
     cfg_path = path if path is not None else str(_DEFAULT_CONFIG_PATH)
-    return _load_cached(cfg_path)
+    return copy.deepcopy(_load_cached(cfg_path))
 
 
 def get(section: str) -> dict:
-    """Return a top-level config block; raise KeyError if the section is missing."""
+    """Return a caller-local deepcopy of a top-level config block; raise KeyError if missing."""
     cfg = load_config()
     if section not in cfg:
         raise KeyError(f"Config section '{section}' not found.")
     return cfg[section]
+
+
+def setup_logging(cfg: dict) -> None:
+    """Apply `config.logging.level` to the root logger — the single log-level knob.
+
+    Wired from `RoboVacuumSDK.__init__`, so every script / GUI / notebook that
+    goes through the SDK honours the documented `logging.level` config value.
+    """
+    logging.getLogger().setLevel(cfg["logging"]["level"])

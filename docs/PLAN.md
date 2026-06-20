@@ -60,7 +60,7 @@ C4Container
     System_Ext(houseexpo, "HouseExpo dataset", "github.com/TeaganLi/HouseExpo @ pinned SHA — curated 4–6 plans vendored under data/maps/ (full ~35k JSON git-ignored)")
 
     Rel(user, cli,  "uv run main.py / uv run scripts/*.py")
-    Rel(user, nb,   "uv run jupyter")
+    Rel(user, nb,   "uv run --group notebook jupyter")
     Rel(cli, sdk,   "calls")
     Rel(nb,  sdk,   "imports & calls (consumer only)")
     Rel(sdk, svc,   "orchestrates")
@@ -345,9 +345,10 @@ Titles are taken **verbatim** from spec §9.
 
 ## §9 — Risks / open items (spec §10)
 
-- **Raycasting performance on complex maps** — mitigate with vectorized
-  segment math, cap ray count (`n_rays` knob), coarse coverage grid
-  (`coverage_cell=0.10`).
+- **Raycasting performance on complex maps** — mitigate with a capped ray
+  count (`n_rays` knob) and a coarse coverage grid (`coverage_cell=0.10`); the
+  per-segment loop is not numpy-vectorized, but the gradient update (not
+  raycasting) dominates training wall-clock, so this is not the bottleneck.
 - **Reward sparsity → slow learning** — mitigate with the dense coverage
   delta (`k_coverage·Δcells`) plus a step cost (`k_step`).
 - **DDPG instability** — mitigate with target networks, soft updates

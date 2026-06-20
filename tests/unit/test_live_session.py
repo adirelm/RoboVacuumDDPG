@@ -68,3 +68,18 @@ def test_reset_re_emits_spawn_footprint(tiny_map):
     s.step()  # consume the initial spawn-prime frame
     s.reset()
     assert s.step().new_cells, "reset() should re-prime new_cells with the spawn footprint"
+
+
+def test_done_drives_episode_boundary_and_respawn(tiny_map):
+    # Shrink max_steps to 1 so step() returns done=True: the live session must
+    # then reset, bump the episode counter, and re-prime _fresh so the NEXT frame
+    # re-emits the spawn footprint as new_cells (live_session.py:115-118).
+    cfg = load_config()
+    cfg["env"]["max_steps"] = 1
+    cfg["env"]["coverage_target"] = 1.0  # isolate the max_steps trigger
+    s = LiveSession(cfg, tiny_map, "play", seed=0)
+    first = s.step()  # step_count -> 1 >= max_steps -> done, then internal reset
+    assert first.done is True and first.episode == 0
+    second = s.step()  # post-reset frame in the new episode
+    assert second.episode == 1, "episode counter must increment after a done step"
+    assert second.new_cells, "the new episode's spawn footprint must be re-emitted"

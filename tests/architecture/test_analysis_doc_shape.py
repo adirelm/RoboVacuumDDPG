@@ -29,9 +29,11 @@ def test_analysis_doc_embeds_figures_and_reports_results() -> None:
     assert "PENDING" not in text
 
 
-def test_analysis_doc_reports_holdout_overfitting() -> None:
+def test_analysis_doc_reports_holdout_generalization() -> None:
     text = _DOC.read_text(encoding="utf-8")
-    # The honest held-out generalization limitation must be stated plainly.
+    # The honest held-out generalization result must be stated plainly, as a
+    # mean ± CI over the seeds (not a single untrained-agent number).
     assert "apt_large" in text
     assert "office" in text
-    assert "overfit" in text.lower()
+    assert "generaliz" in text.lower()
+    assert "95% CI" in text

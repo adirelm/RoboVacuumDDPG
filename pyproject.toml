@@ -20,6 +20,11 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.6",
 ]
+notebook = [
+    "ipykernel>=7.3.0",
+    "ipython>=9.14.1",
+    "jupyterlab>=4.6.0",
+]
 
 [tool.pytest.ini_options]
 addopts = "--cov=src --cov-report=term-missing --cov-fail-under=85"

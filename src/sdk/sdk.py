@@ -11,7 +11,7 @@ from src.env.house_map import Segment, load_house_map
 from src.env.vacuum_env import VacuumEnv
 from src.services.live_session import LiveSession
 from src.services.trainer import Trainer
-from src.utils.config_loader import load_config
+from src.utils.config_loader import load_config, setup_logging
 
 
 class RoboVacuumSDK:
@@ -24,6 +24,7 @@ class RoboVacuumSDK:
     def __init__(self, config_path: str | None = None) -> None:
         self.config_path = config_path
         self.cfg = load_config(config_path)
+        setup_logging(self.cfg)  # honour the documented config.logging.level knob
 
     def _map_path(self, map_name: str) -> str:
         return f"{self.cfg['paths']['maps_dir']}/{map_name}.json"

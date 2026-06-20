@@ -48,14 +48,30 @@
   },
   "holdout": {
     "apt_large": {
-      "coverage": 0.0032,
+      "coverage_mean": 0.10391109828258045,
+      "coverage_ci": 0.057054564417047815,
+      "collisions_mean": 161.8,
       "steps": 1000,
-      "collisions": 0
+      "seeds": [
+        42,
+        7,
+        123,
+        314,
+        271
+      ]
     },
     "office": {
-      "coverage": 0.0028,
+      "coverage_mean": 0.17946920380570855,
+      "coverage_ci": 0.07857026788225639,
+      "collisions_mean": 507.6,
       "steps": 1000,
-      "collisions": 0
+      "seeds": [
+        42,
+        7,
+        123,
+        314,
+        271
+      ]
     }
   }
 }

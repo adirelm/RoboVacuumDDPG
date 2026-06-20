@@ -55,31 +55,45 @@ across-seed level of ≈ +650–700. The wide CI band reflects the seed-271 spre
 sweep that fills most of the room — the qualitative picture behind the ~39%
 coverage number.*
 
-## Held-out generalization (the honest limitation)
+## Held-out generalization (a real but partial transfer gap)
 
 We trained on `room_single` only and then evaluated the **greedy** trained
 policy, with no further learning, on the two `config.maps.holdout` plans
-(`apt_large`, `office` — both physically larger, different geometry), 1000 steps
-each:
+(`apt_large`, `office` — both physically larger, different geometry). Each
+held-out figure is the **mean ± 95% CI over the five training seeds**
+(`scripts/evaluate.py` loads each `seed_*.pt` checkpoint and **fails loudly** if
+one is missing — it never evaluates a fresh agent), 1000 steps each:
 
-| Held-out map | Coverage | Collisions | Steps |
+| Held-out map | Coverage (mean ± 95% CI) | Collisions (mean) | Steps |
 |---|---|---|---|
-| apt_large | 0.0032 (0.32%) | 0 | 1000 |
-| office    | 0.0028 (0.28%) | 0 | 1000 |
+| apt_large | 10.4% ± 5.7% (per-seed 4.4–20.8%) | ≈162 | 1000 |
+| office    | 17.9% ± 7.9% (per-seed 8.4–31.2%) | ≈508 | 1000 |
 
-**Interpretation — the policy overfits to the training-map geometry and does
-not transfer.** Coverage collapses by ~two orders of magnitude (0.39 → ~0.003)
-on the unseen maps. The zero collisions are *not* evidence of competence: the
-agent simply learned the `room_single` heading/turn cadence and replays a tiny,
-safe loop that happens to avoid walls but cleans almost nothing of a larger,
-differently-shaped floor. The 20-dim state is **map-agnostic** (16 lidar rays +
-`(v, ω)` + the `(cos, sin)` bearing to the nearest uncleaned cell = 16+2+2) — it carries no
-global map identity — so a single-map-trained actor has no signal to adapt its
-gross sweep pattern to a new boundary. Closing this would require **multi-map /
-map-conditioned training** (training across the full `maps.train` set, or
-feeding a map embedding / occupancy patch into the state) so the actor learns a
-coverage *strategy* rather than one memorized trajectory. We report this plainly
-rather than quietly evaluating only on the training map.
+**Interpretation — the policy partially generalizes, at a real collision cost.**
+Held-out coverage is ~10–18%, versus ~39% on the training map — a real
+drop of roughly 2–4×, but *not* a collapse: the actor does carry a sweeping
+coverage behaviour over to unseen geometry. The cost of that transfer is
+**collisions** — averaging ≈162 (apt_large) and ≈508 (office) bumps per 1000-step
+episode — so the policy has **not** learned robust, transferable wall-avoidance.
+Both coverage and the collision cost are **strongly seed-dependent**: on apt_large
+coverage spans 4.4%–20.8% and collisions split bimodally (the two cleanest seeds
+collide ~0 times, the wall-grinders 380–420), so the mean blends two regimes
+rather than describing one behaviour — which the wide CIs reflect. The 20-dim state is **map-agnostic**
+(16 lidar rays + `(v, ω)` + the `(cos, sin)` bearing to the nearest uncleaned
+cell = 16+2+2) — it carries no global map identity — so a single-map-trained
+actor has no signal to adapt its gross sweep or its wall-avoidance to a new
+boundary. Closing the gap would require **multi-map / map-conditioned training**
+(training across the full `maps.train` set, or feeding a map embedding /
+occupancy patch into the state) so the actor learns a coverage *strategy* rather
+than one map's trajectory. We report this honestly — including the collision
+cost — rather than quietly evaluating only on the training map.
+
+> **Provenance note (corrected 2026-06-20).** An earlier revision reported
+> held-out coverage as ~0.3% with zero collisions and called it a "collapse /
+> does not transfer." That artifact came from a defect in `scripts/evaluate.py`
+> (default `seed=0` had no checkpoint, so it silently evaluated a *fresh
+> untrained* agent). The numbers above are the trained policy over all five
+> seeds; the fix makes the missing-checkpoint case raise instead of falling back.
 
 ## Q1 — Why DDPG (not DQN, not PPO)
 

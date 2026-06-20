@@ -156,8 +156,9 @@ hit ⇔ (0 ≤ t ≤ ray_max) ∧ (0 ≤ u ≤ 1)
 
 The ray distance is `min` over all hitting segments of `t`; if no wall is
 hit within range, the distance is clamped to `ray_max`. The reported
-observation value is `t / ray_max ∈ [0, 1]`. Vectorize the segment math to
-keep raycast cheap on complex maps (spec §10 perf risk).
+observation value is `t / ray_max ∈ [0, 1]`. The segment math is a tight
+per-segment Python loop (not numpy-vectorized); the gradient update — not
+raycasting — dominates training wall-clock, so the loop is kept simple (spec §10 perf risk).
 
 ### 3.3 Coverage grid + cleaning radius (`coverage.py`)
 

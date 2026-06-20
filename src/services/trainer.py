@@ -23,6 +23,9 @@ class Trainer:
         self.warmup_steps = int(cfg["ddpg"]["warmup_steps"])
         self.action_dim = env.action_dim
         self._global_step = 0
+        # Warmup-exploration RNG is FIXED at seed 0 (not the run seed): the warmup
+        # transitions feed the replay buffer, so pinning them is what lets a fresh
+        # checkout regenerate the sealed per-seed checkpoints EXACTLY (ADR-008).
         self._rng = np.random.default_rng(0)
 
     def _select_action(self, state: np.ndarray) -> np.ndarray:

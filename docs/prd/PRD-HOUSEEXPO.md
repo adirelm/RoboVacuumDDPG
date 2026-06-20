@@ -132,7 +132,7 @@ list. Adding/removing a map is a `config.yaml` edit (`curated_ids` + `train`/
 
 The **train/holdout split** is the data-layer half of design-spec §6's
 "generalization" requirement and ADR-008 (multi-seed eval + held-out
-generalization): the DDPG agent trains only on `maps.train`; `maps.holdout`
+generalization): the DDPG agent trains on `room_single` only (`maps.train[0]`); `maps.holdout`
 plans are loaded **only** at evaluation to measure coverage on layouts the actor
 never saw. The adapter's job is purely to surface both sets by name; the
 trainer/evaluator (`src/services/trainer.py`, `RoboVacuumSDK.evaluate`) decides
