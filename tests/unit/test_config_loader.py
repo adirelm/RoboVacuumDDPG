@@ -12,7 +12,7 @@ from src.utils.config_loader import get, load_config, setup_logging
 def test_load_config_returns_dict_with_version() -> None:
     cfg = load_config()
     assert isinstance(cfg, dict)
-    assert cfg["version"] == "1.0.0"
+    assert cfg["version"] == "1.0.1"
 
 
 def test_load_config_is_cached_equal_value() -> None:

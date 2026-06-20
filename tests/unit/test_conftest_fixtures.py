@@ -5,7 +5,7 @@ from __future__ import annotations
 
 def test_cfg_fixture_is_config_dict(cfg) -> None:
     assert isinstance(cfg, dict)
-    assert cfg["version"] == "1.0.0"
+    assert cfg["version"] == "1.0.1"
     assert cfg["ddpg"]["tau"] == 0.005
     assert cfg["env"]["n_rays"] == 16
 

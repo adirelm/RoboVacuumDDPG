@@ -59,7 +59,7 @@ visualization** (colored path over the JSON map, covered area shaded) +
 
 - New public repo `github.com/adirelm/RoboVacuumDDPG`. Branch: `main`.
 - Group code `adrl-001`; share read access with the lecturer's GitHub handle `@rmisegal`.
-- Version starts `1.0.0` (`src/__init__.py` `__version__` + `config.version` + `pyproject`).
+- Version started `1.0.0`, now `1.0.1` (`src/__init__.py` `__version__` + `config.version` + `pyproject`, kept in sync).
 - Prompt log in `docs/shared/PROMPTS.md`. Meaningful commits; tag major versions.
 - Submission cover sheet `adrl-001-ex05.pdf` via the official Moodle template
   (self-grade ONLY on the PDF; the public repo claims no numeric self-grade).

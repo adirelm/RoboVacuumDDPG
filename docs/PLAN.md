@@ -155,8 +155,8 @@ fontsize) stays in its rendering script. Tree shape (authoritative —
 excerpt; see the file for full):
 
 ```yaml
-# config/config.yaml (authoritative — version "1.0.0")
-version: "1.0.0"
+# config/config.yaml (authoritative — version "1.0.1")
+version: "1.0.1"
 
 ddpg:
   gamma: 0.99            # discount factor γ (justify in docs/ANALYSIS.md)

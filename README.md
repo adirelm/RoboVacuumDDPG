@@ -48,7 +48,7 @@ uv run python scripts/fetch_houseexpo.py
 
 Secrets (if ever needed) belong in a git-ignored `.env`; `.env-example`
 documents the expected keys. The config loader checks that `config/config.yaml`
-exists and parses to a mapping; the `version` field (`1.0.0`) is asserted by the
+exists and parses to a mapping; the `version` field (`1.0.1`) is asserted by the
 test suite (`tests/unit/test_config_loader.py`).
 
 ---
@@ -209,7 +209,7 @@ optional notebook dependency group: `uv run --group notebook jupyter lab`
 ## 4. Configuration guide
 
 All tunable parameters live in **`config/config.yaml`** (single source of truth,
-`version: "1.0.0"`) and are read via `src/utils/config_loader.py` — **no
+`version: "1.0.1"`) and are read via `src/utils/config_loader.py` — **no
 algorithm value is hardcoded in source**. Local UI/plot styling literals stay
 local. The eight blocks:
 

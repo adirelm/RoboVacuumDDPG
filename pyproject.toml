@@ -1,6 +1,6 @@
 [project]
 name = "robovacuumddpg"
-version = "1.0.0"
+version = "1.0.1"
 description = "Bar-Ilan Vibe-Coding & RL Workshop — Assignment 5 (DDPG robotic-vacuum simulator on HouseExpo maps)"
 readme = "README.md"
 license = "MIT"
