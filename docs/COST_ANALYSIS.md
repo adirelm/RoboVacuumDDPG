@@ -58,6 +58,19 @@ shipped code calls no model). We do not invent a dollar figure (spec §10).
 | Token spend (from §1 × rate) | USD | — | n/a — no paid API in the artifact |
 | **AI-tooling subtotal** | USD | — | qualitative (no metered spend) |
 
+**Development-cost dimension (qualitative — not instrumented).** For a Vibe-Coding
+project the larger cost is *development effort*, not runtime. We did **not**
+instrument dev-hours or token usage, so we report this honestly rather than
+inventing a figure: the project was built across multiple Claude Code sessions on
+a flat subscription (no metered per-call API bill), under the architect↔implementer
+loop (CLAUDE.md §1.4). An **AI-rework tax** genuinely exists — a real share of
+effort went to *verifying and redoing* AI output (e.g. a multi-model review that
+caught and corrected a held-out-evaluation defect, and that reverted one
+false-positive fix) — and it is acknowledged here, not silently counted as zero.
+The ≤150-LOC / ≥85%-coverage / zero-Ruff gates acted as a verification-cost
+discipline that bounded that rework. A precise dev-hours/token number is the
+architect's to record on the cover sheet (§1.4).
+
 ## 4. Training runtime & compute envelope
 
 `training.episodes = 500`, `training.seeds = [42, 7, 123, 314, 271]` (5 seeds),
@@ -87,6 +100,16 @@ reproducibility** (see §15 in `docs/QUALITY.md`).
 > (`src/cost/meter.py`) is implemented and unit-tested but is not yet wired into
 > `scripts/train.py` / the multi-seed driver, and no timing field is persisted in
 > `results/history/*.json`. Treat ≈4 h as order-of-magnitude, not measured.
+
+**Where it stops being laptop-cheap (scaling threshold).** Cost scales roughly
+**linearly** in the episode×seed budget — doubling seeds or episodes ≈ doubles the
+≈4 h. The laptop-CPU envelope holds only while (a) the nets stay tiny
+(`[256,256]`, the ≈4 ms gradient step is the bottleneck) and (b) maps stay small.
+It stops being cheap when larger maps + higher `n_rays` push `env.step` up, or
+multi-map training multiplies the run. A GPU buys little there (the small nets
+underuse it); the cheap win is parallelizing the **embarrassingly-parallel seeds**
+across processes (one per seed), cutting the ≈4 h to ≈ one seed's wall-clock
+(`docs/QUALITY.md` §15).
 
 ## 5. Cost envelope — architect spend cap vs running total
 

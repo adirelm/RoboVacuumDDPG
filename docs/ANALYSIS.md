@@ -28,9 +28,10 @@ of training); coverage is the fraction of free cells cleaned per episode.
 across-seed mean reward starts deeply negative (≈ −2000 to −10000 raw over the
 first ~10–15 episodes, when the actor still drives the body into walls and eats
 the `k_collision = 10` penalty repeatedly); the **rolling-10 across-seed mean**
-crosses +500 by ~episode 96, climbs through zero into sustained positive
-territory around **~episode 130**, and holds a positive across-seed level of
-**≈ +650–700** thereafter. That ≈ +650–700 is the *5-seed mean*: the four
+first crosses zero around ~episode 82, crosses +500 by ~episode 96, and settles
+into *sustained* positive territory around **~episode 130**, holding a positive
+across-seed level of **≈ +650–700** thereafter. (The ~130 label is the
+conservative *sustained*-positive onset, not the first zero-crossing at ~82.) That ≈ +650–700 is the *5-seed mean*: the four
 locked-in seeds individually sit at ≈ +900–1050, while seed-271 (−175.5) drags
 the mean down — and the mean still shows occasional negative excursions late in
 training (it is not a flat plateau). See the learning curve below.
@@ -46,8 +47,11 @@ it. The other four seeds cluster at 760–1052 reward / 0.39–0.47 coverage.
 ![Learning curve](../results/figures/learning_curve.png)
 *Across-seed reward vs episode — raw per-episode mean (light) with the rolling-10
 mean (bold), plus the ± 95% CI band. Deeply negative early (collision-dominated);
-the rolling mean climbs through zero around ~episode 130 and holds a positive
-across-seed level of ≈ +650–700. The wide CI band reflects the seed-271 spread.*
+the rolling mean crosses zero around ~episode 82 and settles into a sustained
+positive level (≈ +650–700) by ~episode 130. The wide CI band reflects the
+seed-271 spread. (Regenerating this figure requires re-running training: the raw
+per-seed `results/history/*.json` are git-ignored; the committed PNG and
+`results/metrics_summary.json` are the source of truth.)*
 
 ![Trajectory](../results/figures/trajectory.png)
 *Greedy rollout of the trained **seed-42** policy on `room_single`

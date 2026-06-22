@@ -9,6 +9,11 @@ from src.utils.config_loader import load_config
 
 _REPO = Path(__file__).resolve().parents[2]
 
+# Curated maps derived from config (train + holdout) — adding a map to config
+# auto-extends the spawn-inside regression below; no hardcoded list to drift.
+_CFG_MAPS = load_config()["maps"]
+_ALL_MAPS = _CFG_MAPS["train"] + _CFG_MAPS["holdout"]
+
 # 4x4 square room; walls on the four edges
 WALLS = [
     (0.0, 0.0, 4.0, 0.0),
@@ -117,7 +122,7 @@ def test_env_runs_on_real_curated_houseexpo_map():
     assert 0.0 <= info["coverage"] <= 1.0
 
 
-@pytest.mark.parametrize("map_name", ["room_single", "apt_small", "apt_multi", "apt_large", "office"])
+@pytest.mark.parametrize("map_name", _ALL_MAPS)
 def test_spawn_is_inside_polygon_across_maps_and_seeds(map_name):
     # The robot must spawn INSIDE the floor polygon on every curated map and seed
     # — not merely collision-free, which on a non-convex plan can land in an

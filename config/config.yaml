@@ -14,7 +14,7 @@ ddpg:
 
 # ---- Exploration noise (brief mandates GAUSSIAN, not OU) ----
 noise:
-  type: gaussian
+  type: gaussian         # descriptive/pinned (brief-mandated, ADR-003) — not a dispatch knob; no code reads it
   sigma_start: 0.2       # initial Gaussian std added to actions in [-1, 1]
   sigma_end: 0.05
   sigma_decay_steps: 50000

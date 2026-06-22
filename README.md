@@ -27,6 +27,15 @@ This README **is the submission-report shell** (ex05 deliverables). Section
 [3](#3-deliverables-ex05-deliverables) collects the graded deliverables; deeper detail
 lives in the linked docs. Group code `adrl-001`; cover sheet `adrl-001-ex05.pdf`.
 
+**Cost & honesty.** Compute ≈ **4 h CPU** wall-clock (5 seeds × 500 episodes, no
+GPU, **$0 paid-API** — the artifact calls no model); the ~163k-token corpus and the
+development-effort / AI-rework dimension are in
+[`docs/COST_ANALYSIS.md`](docs/COST_ANALYSIS.md). This is a **working baseline, not
+a finished product**: it learns coverage control on the training map but only
+*partially* generalizes (the held-out gap + collision cost above), and the run is
+not uniformly converged (seed-271). We report those gaps plainly rather than claim
+a perfect result.
+
 ---
 
 ## 1. Installation
@@ -153,10 +162,11 @@ seeds `[42, 7, 123, 314, 271]`:
 
 > ![Learning curve, mean ± 95% CI over 5 seeds](results/figures/learning_curve.png)
 > *Raw per-episode across-seed mean (light) with a rolling-10 mean (bold).
-> Deeply negative early (collision-dominated); the rolling mean climbs through
-> zero around ~episode 130 and holds a positive across-seed level of ≈ +650–700
-> thereafter (the four locked-in seeds sit at ≈ +900–1050; seed-271 pulls the
-> mean down). Wide CI band reflects the seed-271 spread.
+> Deeply negative early (collision-dominated); the rolling mean crosses zero
+> around ~episode 82 and settles into a sustained positive across-seed level of
+> ≈ +650–700 by ~episode 130 (the ~130 is the conservative sustained-positive
+> onset, not the zero-crossing; the four locked-in seeds sit at ≈ +900–1050,
+> seed-271 pulls the mean down). Wide CI band reflects the seed-271 spread.
 > Regenerate: `uv run python scripts/render_learning_curve.py`.*
 
 **Critic loss** — per-episode-mean critic MSE vs. episode:
